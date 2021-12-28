@@ -144,7 +144,7 @@ $(() => {
     let msgBody = this.inputMessage.val();
     if (msgBody) {
       this.messagesList.scrollable.prepend(`<div class="message f">
-      <img src="modules/c2m_chat/files/users_default_avatars/User avatar (1).png" alt="User">
+      <img src="files/users_default_avatars/User avatar (1).png" alt="User">
       <div class="f col">
           <div class="f a-e head username">
               ${this.session.userDisplayedName}
