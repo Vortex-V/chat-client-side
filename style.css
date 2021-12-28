@@ -53,10 +53,14 @@
 }
 
 #c2m-chat .main {
-    width: 100%;
+    width: inherit;
     height: 100%;
     overflow-y: hidden;
     background: #ECF6FC;
+}
+
+#c2m-caht .main>*{
+    width: inherit;
 }
 
 #chat-top-panel {
@@ -114,6 +118,7 @@
 #chat-input-lines-count-checker>div>* {
     min-height: 25px;
     max-width: 100%;
+    word-wrap: break-word;
 }
 
 #chat-msgs-list {
@@ -126,6 +131,7 @@
 .message {
     margin-bottom: 20px;
     width: 100%;
+    max-width: 100%;
     font-size: 14px;
 }
 
