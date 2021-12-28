@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div id="c2m-chat" style="display: none;">
+    <div class="main f col">
+      <div id="chat-top-panel" class="f j-c a-c">
+        <div class="chat-svg chat-arrow-svg"></div>
+      </div>
+      <div id="chat-write-msg" class="f">
+        <div class="f j-c">
+          <div class="chat-svg chat-plus-svg"></div>
+        </div>
+        <div class="msg-input-parent f j-c">
+          <textarea name="msg-body" id="chat-input-msg" placeholder="Написать сообщение..." required></textarea>
+          <div id="chat-input-lines-count-checker">
+            <div></div>
+          </div>
+        </div>
+        <div class="f j-c">
+          <div id="chat-send-message" class="chat-svg chat-send-msg-svg"></div>
+        </div>
+      </div>
+      <div id="chat-msgs-list" class="f">
+        <div class="f col a-c cubic-bezier-anim scrollable" style="margin-top: 0;">
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+    integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+  <script src="javascript.js"></script>
+</body>
+
+</html>
