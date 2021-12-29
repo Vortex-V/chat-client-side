@@ -95,24 +95,6 @@ $(() => {
     this.addClass('closed');
     this.show();
 
-
-    /* session */
-    // TEST
-    let test = {
-      'user_id': '1',
-      'session_id': '2',
-      'user_displayed_name': 'Kolya',
-    }
-    this.data('session', JSON.stringify(test));
-    // TEST
-
-
-    let data = JSON.parse(this.data('session'));
-    this.session = {
-      userId: data['user_id'],
-      sessionId: data['session_id'],
-      userDisplayedName: data['user_displayed_name'],
-    };
   }
 
   Chat.p = Chat.prototype = $('#c2m-chat');
@@ -143,29 +125,46 @@ $(() => {
     return result;
   }
   Chat.p.createMessage = function () {
-    let msgBody = this.inputMessage.val();
-    // TODO: создать "сборщик" сообщения в соответствии с передаваемыми в метод данными
-    if (msgBody) {
-      this.messagesList.scrollable.prepend(`<div class="message f">
-      <div class="msg-left-col">
-        <img src="files/users_default_avatars/User avatar (1).png" alt="User">
-      </div>
+    let msgBody = this.inputMessage.val()
+    /*let message =
+      $('<div>', {
+        'class': 'message f j-e',
+      })
+      .append($('<div>', {
+        'class': 'msg-left-col',
+      }))
+      .append($('<div>', {
+          'class': 'msg-center-col f col',
+        })
+        .append($('<div>', {
+          'class': 'msg-head f a-e',
+        }))
+        .append($('<div>', {
+          'class': 'msg-body',
+        })).text(msgBody))
+      .append($('<div>', {
+          'class': 'msg-right-col f col j-b',
+        })
+        .append($('<div>', {
+          'class': 'msg-timestamp f a-e ',
+        })));*/
+
+    let message = $(
+      `<div class="message my-message f j-e">
+      <div class="msg-left-col"></div>
       <div class="f col msg-center-col">
-        <div class="f a-e msg-head">
-        ${this.session.userDisplayedName}
-        </div>
-        <div class="msg-body">
-        ${msgBody}
-        </div>
+        <div class="f a-e msg-head"></div>
+        <div class="msg-body">${msgBody}</div>
       </div>
       <div class="f col j-b msg-right-col">
+        <div class="msg-me f j-c a-c">Я</div>
         <div class="f a-e msg-timestamp">9:00</div>
       </div>
-    </div>`)
-      this.inputMessage.height(25);
-      this.inputMessage.val('');
-      this.resetMaxScrollY();
-    }
+    </div>`);
+    this.messagesList.scrollable.prepend(message);
+    this.inputMessage.height(25);
+    this.inputMessage.val('');
+    this.resetMaxScrollY();
   }
   Chat.p.resetMaxScrollY = function () {
     this.messagesList.maxScrollY = this.messagesList.scrollable[0].scrollHeight - (this.messagesList.height())
@@ -173,4 +172,13 @@ $(() => {
 
   let chat = new Chat();
   console.log(chat);
-})
+
+  // Dev tool
+  $.chat = function (userId, roomId) {
+    chat.data('session', JSON.stringify({
+      'userId': userId,
+      'roomId': roomId,
+    }));
+    return chat.data('session');
+  };
+});

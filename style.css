@@ -19,6 +19,10 @@
     justify-content: space-around;
 }
 
+.j-e{
+    justify-content: flex-end;
+}
+
 .a-c {
     align-items: center;
 }
@@ -124,29 +128,27 @@
     width: 100%;
     max-width: inherit;
     font-size: 14px;
+
+}
+
+.message.my-message {
+   /* text-align: right;*/
 }
 
 .msg-left-col,
 .msg-right-col {
+    min-width: 25px;
     user-select: none;
 }
 
 .msg-center-col {
+    margin: 0 5px;
     max-width: 100%;
 }
 
 .msg-head,
 .msg-right-col {
     color: rgba(0, 0, 0, 0.4);
-}
-
-.msg-timestamp {
-    flex: 1;
-    font-size: 12px;
-}
-
-.message>:nth-child(2) {
-    margin: 0 5px;
 }
 
 .message img {
@@ -159,6 +161,16 @@
     margin-top: 5px;
     max-width: 100%;
     word-wrap: break-word;
+}
+
+.msg-me{
+    width: 25px;
+    height: 25px;
+}
+
+.msg-timestamp {
+    flex: 1;
+    font-size: 12px;
 }
 
 .msgs-scrollable {
