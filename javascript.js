@@ -1,8 +1,6 @@
 $(() => {
   let Chat = function () {
-    this.addClass('closed');
-
-    this.setElementsById({
+    this.elements({
       'topPanel': 'chat-top-panel',
       'inputMessage': 'chat-input-msg',
       'inputLinesCountChecker': 'chat-input-lines-count-checker',
@@ -10,6 +8,9 @@ $(() => {
       'buttonSendMessage': 'chat-send-message',
     });
 
+
+    /* Открывает окно чата при нажатии Ctrl+Alt+T 
+    TODO: сделать комбинацию клавиш настриваемой */
     $(window).keydown((e) => {
       let keyEvent = e.originalEvent;
       if (keyEvent.keyCode == 84 && keyEvent.altKey && keyEvent.ctrlKey) {
@@ -21,68 +22,50 @@ $(() => {
     let topPanel = this.topPanel;
     topPanel.click.canClick = true;
 
+
     let click = () => {
       if (this.topPanel.click.canClick) {
         this.openOrClose();
       }
     }
-
     topPanel.one('click', () => {
       this.openOrClose();
       setTimeout(() => {
-        this.resetMaxScrollY(); // TODO: после реализации функционала подгрузки сообщений с БД, перенести
+        this.resetMaxScrollY(); // TODO: после реализации функционала подгрузки сообщений с БД перенести
       }, 500);
       topPanel.click(click);
     }, );
-
-    this.draggable({
-      handle: topPanel,
-      stack: this,
-      disabled: true,
-      start: function (event, ui) {
-        topPanel.click.canClick = false;
-      },
-      stop: function () {
-        setTimeout(() => {
-          topPanel.click.canClick = true;
-        }, 1);
-      }
-    });
 
 
     /* inputMessage & inputLinesCountChecker */
     let inputMessage = this.inputMessage;
     let inputLinesCountChecker = this.inputLinesCountChecker;
     inputMessage.on('input', () => {
-      let text = inputMessage.val();
-      text = this.convertBreakes(text);
-      let div = $("<div>").append(text);
-      let inputedText = inputLinesCountChecker.children('div');
-      inputedText.replaceWith(div);
-     // let linesCount = Math.floor(this.inputLinesCountChecker.height() / 25);
-      /*let i = text.indexOf('\n');
-      while (i != -1) {
-        linesCount++;
-        i = text.indexOf('\n', i + 1);
-      }*/
-      //inputMessage.height(25 * linesCount);
+      // Определяет высоту текстового поля из количества введенных строк
+      let paragraphs = this.convertBreakes(inputMessage.val());
+      let newInputedParagraps = $("<div>").append(paragraphs);
+      let inputedParagraps = inputLinesCountChecker.children('div');
+      inputedParagraps.replaceWith(newInputedParagraps);
       inputMessage.height(inputLinesCountChecker.height());
     });
+    /* Отправляет сообщение на Ctrl+Enter
+    TODO: сделать комбинацию клавиш настриваемой */
     inputMessage.keydown((e) => {
       if (e.key == 'Enter' && e.ctrlKey) {
-        this.sendMessage();
+        this.createMessage();
       };
     });
 
 
     /* buttonSendMessage */
-    this.buttonSendMessage.click(()=>{
-      this.sendMessage();
+    this.buttonSendMessage.click(() => {
+      this.createMessage();
     });
+
 
     /* messagesList */
     let messagesList = this.messagesList;
-    messagesList.scrollable = messagesList.children('.scrollable');
+    messagesList.scrollable = messagesList.children('.msgs-scrollable');
     // maxScrollY задаётся в событии topPanel.click
     messagesList.on('wheel', (e) => {
       let newScrollY = parseInt(messagesList.scrollable.css('margin-top')) - e.originalEvent.deltaY * 2;
@@ -95,8 +78,25 @@ $(() => {
       }
     });
 
-    /* session */
+    this.draggable({
+      handle: topPanel,
+      stack: this,
+      disabled: true,
+      start: function (event, ui) {
+        topPanel.click.canClick = false;
+      },
+      stop: function () {
+        // Не даёт произойти закрытию окна после перетаскивания
+        setTimeout(() => {
+          topPanel.click.canClick = true;
+        }, 1);
+      }
+    });
+    this.addClass('closed');
+    this.show();
 
+
+    /* session */
     // TEST
     let test = {
       'user_id': '1',
@@ -113,20 +113,19 @@ $(() => {
       sessionId: data['session_id'],
       userDisplayedName: data['user_displayed_name'],
     };
-  };
+  }
 
   Chat.p = Chat.prototype = $('#c2m-chat');
-
-  Chat.p.setElementsById = function (elements) {
+  Chat.p.elements = function (elements) {
     for (let name in elements) {
       let id = elements[name];
       let child = $('#' + id);
-      child.length ? this[name] = child : this.throwException('setChild', null, {
-        'id': id
-      });
+      child.length ? this[name] = child : this.throwException(`Не найден элемент по id = ${params['id']}`);
     }
   }
-
+  Chat.p.throwException = function (message) {
+    throw message;
+  }
   Chat.p.openOrClose = function () {
     this.toggleClass('closed');
     if (this.hasClass('closed')) this.draggable('disable');
@@ -135,56 +134,43 @@ $(() => {
       this.inputMessage.focus();
     }
   }
-
-  Chat.p.resetMaxScrollY = function () {
-    this.messagesList.maxScrollY = this.messagesList.scrollable[0].scrollHeight - (this.messagesList.height())
+  Chat.p.convertBreakes = function (text) {
+    let paragraphs = text.split('\n');
+    let result = [];
+    for (let paragraph of paragraphs) {
+      result.push($('<div>').text(paragraph));
+    }
+    return result;
   }
-
-  Chat.p.sendMessage = function () {
+  Chat.p.createMessage = function () {
     let msgBody = this.inputMessage.val();
+    // TODO: создать "сборщик" сообщения в соответствии с передаваемыми в метод данными
     if (msgBody) {
       this.messagesList.scrollable.prepend(`<div class="message f">
-      <img src="files/users_default_avatars/User avatar (1).png" alt="User">
-      <div class="f col">
-          <div class="f a-e head username">
-              ${this.session.userDisplayedName}
-          </div>
-          <div class="msg-body">
-              ${msgBody}
-          </div>
+      <div class="msg-left-col">
+        <img src="files/users_default_avatars/User avatar (1).png" alt="User">
       </div>
-      <div class="f head">
-          <div class="f a-e time">9:00</div>
+      <div class="f col msg-center-col">
+        <div class="f a-e msg-head">
+        ${this.session.userDisplayedName}
+        </div>
+        <div class="msg-body">
+        ${msgBody}
+        </div>
       </div>
-  </div>`)
+      <div class="f col j-b msg-right-col">
+        <div class="f a-e msg-timestamp">9:00</div>
+      </div>
+    </div>`)
       this.inputMessage.height(25);
       this.inputMessage.val('');
       this.resetMaxScrollY();
     }
-
   }
-
-  Chat.p.convertBreakes = function (text) {
-    let lines = text.split('\n');
-    let result = [];
-    for (let line of lines) {
-      result.push($('<div>').text(line));
-    }
-    return result;
+  Chat.p.resetMaxScrollY = function () {
+    this.messagesList.maxScrollY = this.messagesList.scrollable[0].scrollHeight - (this.messagesList.height())
   }
-
-  Chat.p.throwException = function (type, message = null, params = null) {
-    switch (type) {
-      case 'setChild':
-        throw `Не удалось найти DOM объект по id = ${params['id']}`;
-      default:
-        break;
-    }
-  }
-
-
 
   let chat = new Chat();
-  chat.show();
   console.log(chat);
 })

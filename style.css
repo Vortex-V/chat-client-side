@@ -44,23 +44,14 @@
 
     transition-timing-function: cubic-bezier(.1, .57, .21, .98);
     transition-duration: 0.5s;
+
+    background: #ECF6FC;
 }
 
 #c2m-chat.closed {
     height: 20px;
     top: auto !important;
     bottom: 0 !important;
-}
-
-#c2m-chat .main {
-    width: inherit;
-    height: 100%;
-    overflow-y: hidden;
-    background: #ECF6FC;
-}
-
-#c2m-caht .main>*{
-    width: inherit;
 }
 
 #chat-top-panel {
@@ -90,15 +81,11 @@
     margin: 0;
     padding: 0;
     height: 25px;
-
     flex: 1;
     box-sizing: border-box;
-    overflow: hidden;
     resize: none;
-
     border: none;
     background-color: inherit;
-
     line-height: 25px;
 }
 
@@ -128,19 +115,33 @@
     background: inherit;
 }
 
+#chat-msgs-list>div {
+    width: inherit;
+}
+
 .message {
     margin-bottom: 20px;
     width: 100%;
-    max-width: 100%;
+    max-width: inherit;
     font-size: 14px;
 }
 
-.message .head {
-    color: rgba(0, 0, 0, 0.4);
+.msg-left-col,
+.msg-right-col {
     user-select: none;
 }
 
-.message .time {
+.msg-center-col {
+    max-width: 100%;
+}
+
+.msg-head,
+.msg-right-col {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+.msg-timestamp {
+    flex: 1;
     font-size: 12px;
 }
 
@@ -157,9 +158,11 @@
 .message .msg-body {
     margin-top: 5px;
     max-width: 100%;
+    word-wrap: break-word;
 }
 
-.cubic-bezier-anim {
+.msgs-scrollable {
+    max-width: 100%;
     transition-timing-function: cubic-bezier(.1, .57, .21, .98);
     transition-duration: 1s;
 }
