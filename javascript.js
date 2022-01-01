@@ -52,14 +52,15 @@ $(() => {
     TODO: сделать комбинацию клавиш настриваемой */
     inputMessage.keydown((e) => {
       if (e.key == 'Enter' && e.ctrlKey) {
-        this.createMessage();
+        this.sendMessage();
+
       };
     });
 
 
     /* buttonSendMessage */
     this.buttonSendMessage.click(() => {
-      this.createMessage();
+      this.sendMessage();
     });
 
 
@@ -124,8 +125,7 @@ $(() => {
     }
     return result;
   }
-  Chat.p.createMessage = function () {
-    let msgBody = this.inputMessage.val()
+  Chat.p.createMessage = function (msgBody) {
     /*let message =
       $('<div>', {
         'class': 'message f j-e',
@@ -169,12 +169,36 @@ $(() => {
   Chat.p.resetMaxScrollY = function () {
     this.messagesList.maxScrollY = this.messagesList.scrollable[0].scrollHeight - (this.messagesList.height())
   }
+  Chat.p.sendMessage = function () {
+    let requestBody = this.inputMessage.val();
+    this.createMessage(requestBody);
+    $.ajax({
+      url: 'http://localhost/chat-api-test.click2mice/web/api',
+      method: 'post',
+      dataType: 'json',
+      data: {
+        userId: this.session.userId,
+        roomId: this.session.roomId,
+        body: requestBody,
+      },
+      success: (result) => {
+        console.log(result);
+      },
+      error: (jqXHR, exception) => {
+        console.log(exception);
+      },
+    })
+  }
 
   let chat = new Chat();
   console.log(chat);
 
   // Dev tool
   $.chat = function (userId, roomId) {
+    chat.session = {
+      'userId': userId,
+      'roomId': roomId,
+    }
     chat.data('session', JSON.stringify({
       'userId': userId,
       'roomId': roomId,
