@@ -1,5 +1,11 @@
 $(() => {
-    const API = 'http://chat.api.click2mice.local';
+    const API = 'http://chat.api.click2mice.local',
+        POST = 'post',
+        GET = 'get'
+    let session = {
+        userId: null,
+        roomId: null,
+    }
 
     let Chat = function () {
 
@@ -64,8 +70,8 @@ $(() => {
         /**
          * @param msgBody {string}
          */
-        this.createMessage = function (msgBody) {
-            EL.messagesList.scrollable.prepend($(
+        this.addMessageToField = function (msgBody) {
+            EL.messagesList.children('.msgs-scrollable').prepend($(
                 `<div class="message my-message f j-e">
                     <div class="msg-left-col"></div>
                     <div class="f col msg-center-col">
@@ -83,46 +89,56 @@ $(() => {
             //this.resetMaxScrollY();
         }
 
-        /**
-         * @returns {*}
-         */
+        // REQUESTS
+        this.getRoom = function () {
+            let result = sendAjax(`/room/get?room_id=${session.roomId}`);
+            console.log(this.response);
+        }
+
+        this.getMessage = function () {
+            let result = sendAjax(`/message/get?message_id=${1}`);
+            console.log(this.response);
+        }
+
+        this.createUser = function () {
+            let result = sendAjax(`/user/create`, {
+                display_name: 'TEST USER'
+            }, POST);
+            console.log(this.response);
+        }
+
+        this.createRoom = function () {
+            let result = sendAjax(`/room/create`, null, POST);
+            console.log(this.response);
+        }
+
+        this.addUserToRoom = function () {
+            let result = sendAjax(`/room/create`, {
+                room_id: 1,
+                user_id: 2
+            }, POST);
+            console.log(this.response);
+        }
+
+        this.syncRoomUsers = function () {
+            let result = sendAjax(`/room/create`, {
+                room_id: 1,
+            }, POST);
+            console.log(this.response);
+        }
+
         this.sendMessage = function () {
-            let requestBody = EL.messageArea.val();
-            let result = this.sendAjax('/message/send',
-                {
-                    userId: this.session.userId,
-                    roomId: this.session.roomId,
-                    body: requestBody,
-                }, 'post');
-            this.createMessage(requestBody);
-            return result;
+            let messageBody = EL.messageArea.val();
+            let result = sendAjax('/message/send', {
+                user_id: session.userId,
+                room_id: session.roomId,
+                body: messageBody
+            }, POST);
+            if (result.status === 200) {
+                this.addMessageToField(messageBody);
+            }
         }
-
-        this.sendAjax = function (query, data, method = 'get') {
-            let result = "TEST FAILED";
-            $.ajax(
-                API + query,
-                {
-                    method: method,
-                    crossDomain: true,
-                    contentType: 'application/json',
-                    data: JSON.stringify(data),
-                    dataType: 'json',
-                    success: (resultData) => {
-                        result = resultData;
-                    },
-                    error: (jqXHR, exception) => {
-                        result = exception;
-                    },
-                }
-            );
-
-            $(document).ajaxSuccess(function () {
-                console.log("Triggered ajaxSuccess handler.");
-            });
-            console.log(result)
-            return result;
-        }
+        // END REQUESTS
 
         // END FUNCTIONS
 
@@ -207,48 +223,28 @@ $(() => {
     }
 
     let chat = window.chat = new Chat();
-    console.log(chat);
+
+    function sendAjax(query, data = null, method = GET) {
+        let options = {
+            method: method,
+            contentType: 'application/json',
+        };
+        if (data) options.data = JSON.stringify(data)
+        return $.ajax(API + query, options)
+            .done((resultData, status, jqXHR) => {
+                chat.response = resultData;
+            })
+            .fail((jqXHR, text, error) => {
+                console.log(jqXHR)
+                console.log(text)
+                console.log(error)
+            })
+    }
 
     // Dev tool
     chat.startTest = function (userId = 1, roomId = 1) {
-        chat.session = {
-            'userId': userId,
-            'roomId': roomId,
-        }
+        session.userId = 1;
+        session.roomId = 1;
+        return 1;
     };
-
-    function XHRGetTest() {
-        let xhr = new XMLHttpRequest();
-
-        xhr.open("GET", 'http://chat.api.click2mice.local/message/send' + '?test=TEST', true);
-        xhr.onreadystatechange = function (p) {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                let status = xhr.status;
-                if (status === 0 || (status >= 200 && status < 400)) {
-                    console.log(xhr.responseText);
-                }
-            }
-        };
-
-        xhr.send();
-    }
-
-    function XHRPostTest(query) {
-        let xhr = new XMLHttpRequest();
-
-        xhr.open("POST", 'http://chat.api.click2mice.local' + query, true);
-        xhr.setRequestHeader('Content-type', 'application/json');
-        xhr.onreadystatechange = function (p) {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                let status = xhr.status;
-                if (status === 0 || (status >= 200 && status < 400)) {
-                    console.log(xhr.responseText);
-                }
-            }
-        };
-
-        xhr.send(JSON.stringify({
-            data: 'test'
-        }));
-    }
 });

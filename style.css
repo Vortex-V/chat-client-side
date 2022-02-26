@@ -81,7 +81,7 @@
     flex: 1;
 }
 
-#chat-input-msg {
+#chat-msg-area {
     margin: 0;
     padding: 0;
     height: 25px;
@@ -93,7 +93,7 @@
     line-height: 25px;
 }
 
-#chat-input-msg:focus {
+#chat-msg-area:focus {
     outline: none;
 }
 
@@ -193,7 +193,7 @@
 }
 
 #c2m-chat.closed .chat-arrow-svg {
-    transform: rotateX(180deg);
+    /*transform: rotateX(180deg);*/
 }
 
 .chat-plus-svg {
