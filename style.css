@@ -101,9 +101,10 @@
     position: absolute;
     width: 100%;
     max-width: 100%;
-    max-height: 400px;
+    max-height: 300px;
     z-index: -1;
     line-height: 25px;
+    overflow: hidden;
 }
 
 #chat-input-lines-count-checker>div>* {
@@ -116,6 +117,7 @@
     padding: 10px;
     flex: 1;
     overflow: hidden;
+    overflow-y: auto;
     background: inherit;
 }
 
@@ -124,7 +126,7 @@
 }
 
 .message {
-    margin-bottom: 20px;
+    padding-bottom: 20px;
     width: 100%;
     max-width: inherit;
     font-size: 14px;
@@ -159,7 +161,7 @@
 
 .message .msg-body {
     margin-top: 5px;
-    max-width: 100%;
+    max-width: 260px;
     word-wrap: break-word;
 }
 
