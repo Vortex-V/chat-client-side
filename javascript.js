@@ -7,6 +7,18 @@ $(() => {
         roomId: null,
     }
 
+    function chatAjax(query, data = null, method = 'get') {
+        let options = {
+            method: method,
+            contentType: 'application/json',
+        };
+        if (data) options.data = JSON.stringify(data)
+        return $.ajax(API + query, options)
+            .fail((jqXHR) => {
+                console.log(jqXHR.responseJSON.errors)
+            });
+    }
+
     let Chat = function () {
 
         // FUNCTIONS
@@ -67,6 +79,18 @@ $(() => {
             return result;
         }
 
+        this.updateFieldHeight = function () {
+            // Определяет высоту текстового поля из количества введенных строк
+            EL.inputLinesCountChecker.children('div')
+                .replaceWith(
+                    $("<div>").append(
+                        this.splitToDivArray(
+                            EL.messageArea.val())
+                    )
+                );
+            EL.messageArea.height(EL.inputLinesCountChecker.height());
+        }
+
         /**
          * @param msgBody {string}
          */
@@ -84,36 +108,33 @@ $(() => {
                     </div>
                 </div>`
             ));
-            EL.messageArea.height(25);
-            EL.messageArea.val('');
-            //this.resetMaxScrollY();
         }
 
         // REQUESTS
         this.getRoom = function () {
-            let result = sendAjax(`/room/get?room_id=${session.roomId}`);
+            let result = chatAjax(`/room/get?room_id=${session.roomId}`);
             console.log(this.response);
         }
 
-        this.getMessage = function () {
-            let result = sendAjax(`/message/get?message_id=${1}`);
+        this.getMessagesForRoom = function () {
+            let result = chatAjax(`/message/get?room_id=${1}`);
             console.log(this.response);
         }
 
         this.createUser = function () {
-            let result = sendAjax(`/user/create`, {
+            let result = chatAjax(`/user/create`, {
                 display_name: 'TEST USER'
             }, POST);
             console.log(this.response);
         }
 
         this.createRoom = function () {
-            let result = sendAjax(`/room/create`, null, POST);
+            let result = chatAjax(`/room/create`, null, POST);
             console.log(this.response);
         }
 
         this.addUserToRoom = function () {
-            let result = sendAjax(`/room/create`, {
+            let result = chatAjax(`/room/create`, {
                 room_id: 1,
                 user_id: 2
             }, POST);
@@ -121,22 +142,29 @@ $(() => {
         }
 
         this.syncRoomUsers = function () {
-            let result = sendAjax(`/room/create`, {
+            let result = chatAjax(`/room/create`, {
                 room_id: 1,
             }, POST);
             console.log(this.response);
         }
 
-        this.sendMessage = function () {
+        this.sendMessage = async function () {
             let messageBody = EL.messageArea.val();
-            let result = sendAjax('/message/send', {
-                user_id: session.userId,
-                room_id: session.roomId,
-                body: messageBody
-            }, POST);
-            if (result.status === 200) {
-                this.addMessageToField(messageBody);
+            if (messageBody) {
+                chatAjax('/message/send', {
+                    user_id: session.userId,
+                    room_id: session.roomId,
+                    body: messageBody
+                }, POST)
+                    .done((resultData, status, jqXHR) => {
+                        this.addMessageToField(resultData.data.body);
+                    })
+                    .fail(() => {
+                        console.log('test')
+                    });
             }
+            EL.messageArea.height(25);
+            EL.messageArea.val('');
         }
         // END REQUESTS
 
@@ -171,17 +199,7 @@ $(() => {
         });
 
         EL.messageArea
-            .on('input', () => {
-                // Определяет высоту текстового поля из количества введенных строк
-                EL.inputLinesCountChecker.children('div')
-                    .replaceWith(
-                        $("<div>").append(
-                            this.splitToDivArray(
-                                EL.messageArea.val())
-                        )
-                    );
-                //EL.messageArea.height(EL.inputLinesCountChecker.height());
-            })
+            .on('input', this.updateFieldHeight)
             .keydown((e) => {  /* Отправляет сообщение на Ctrl+Enter TODO: сделать комбинацию клавиш настриваемой */
                 if (e.key === 'Enter' && e.ctrlKey) {
                     this.sendMessage();
@@ -224,27 +242,16 @@ $(() => {
 
     let chat = window.chat = new Chat();
 
-    function sendAjax(query, data = null, method = GET) {
-        let options = {
-            method: method,
-            contentType: 'application/json',
-        };
-        if (data) options.data = JSON.stringify(data)
-        return $.ajax(API + query, options)
-            .done((resultData, status, jqXHR) => {
-                chat.response = resultData;
-            })
-            .fail((jqXHR, text, error) => {
-                console.log(jqXHR)
-                console.log(text)
-                console.log(error)
-            })
-    }
+    /* Чтобы не стёртый ранее текст из поля ввода сообщения
+       влиял на высоту блока ввода после обновления страницы */
+    chat.updateFieldHeight();
+
 
     // Dev tool
     chat.startTest = function (userId = 1, roomId = 1) {
-        session.userId = 1;
-        session.roomId = 1;
+        session.userId = userId;
+        session.roomId = roomId;
+        this.sendMessage();
         return 1;
     };
 });
