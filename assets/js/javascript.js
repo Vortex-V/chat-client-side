@@ -73,7 +73,7 @@ $(() => {
         this.splitToDivs = function (text) {
             let result = [];
             for (let paragraph of text.split('\n')) {
-                result.push($('<div>').text(paragraph)[0]);
+                result.push($(`<div>${paragraph}</div>`)[0]);
             }
             return result;
         }
@@ -81,10 +81,9 @@ $(() => {
         this.updateFieldHeight = function () {
             // Определяет высоту текстового поля из количества введенных строк
             EL.textAreaHeight.children()
-                .replaceWith(
-                    $('<div>').append(
-                        this.splitToDivs(
-                            EL.messageTextArea.val()
+                .replaceWith($('<div>')
+                    .append(
+                        this.splitToDivs(EL.messageTextArea.val()
                         )
                     )
                 );
@@ -92,14 +91,80 @@ $(() => {
         }
 
         /**
-         * @param data {{}}
+         * @param data {{
+         *     id,
+         *     body,
+         *     timestamp,
+         *     user,
+         *     mention,
+         *     files,
+         * }}
          */
-        this.addMessageToField = function (data) {
-            EL.messagesList.children('.msgs-scrollable').prepend();
+        this.addMessage = function (data) {
+            EL.messagesList.children().prepend(this.messageDiv(data.id, data.body, data.timestamp, data.user, data.mention, data.files));
         }
 
-        this.createMessageDiv = function () {
+        /**
+         *
+         * @param id {int}
+         * @param body {string}
+         * @param timestamp {string}
+         * @param user {{
+         *         id: int,
+         *         displayName: string
+         *     }}
+         * @param mention {array}
+         * @param files {[{
+         *     id: string,
+         *     name: string|null,
+         * }]}
+         * TODO окончательно опеределиться с параметрами
+         */
+        this.messageDiv = function (id, body, timestamp, user, mention = [], files = []) {
+            let div = $('<div class="chat-message d-flex">');
 
+            let leftColumn = $('<div>', {class: 'message-left-col'});
+
+            let centerColumn = $('<div class="message-center-col d-flex flex-column flex-fill mx-1">');
+            let messageHead = $('<div class="d-flex flex-wrap message-head">');
+
+            let rightColumn = $('<div class="message-right-col position-relative">');
+
+            if (user.id === session.userId) {
+                rightColumn.append('<div class="my-message d-flex justify-content-center align-items-center">Я</div>');
+            } else {
+                leftColumn.append('<img alt="user" src="/assets/files/users_default_avatars/User avatar.png">'); //TODO получать src у пользователя
+                messageHead.text(user.displayName);
+            }
+
+            if (mention.length) {
+                let mentionDiv = $('<span class="message-mention">').text(mention.length === 1 ? mention[0] : 'пользователям');
+                messageHead
+                    .append($('<div class="text-end w-100">ответил(а) </div>')
+                        .append(mentionDiv)
+                    );
+            }
+
+            centerColumn.append(messageHead)
+
+            for (let file of files) {
+                centerColumn.append(`<div class="message-attached-file">file_${file.id}${" | " + file.name ?? ""}</div>`);
+            }
+
+            centerColumn
+                .append($('<div class="message-body formatted-message-text mt-1">')
+                    .append($('<div>')
+                        .append(this.splitToDivs(body))
+                    )
+                );
+
+            rightColumn.append(`<div class="message-timestamp">${timestamp}</div>`);
+
+
+            div.append(leftColumn, centerColumn, rightColumn);
+
+            console.log(div);
+            return div;
         }
 
         // REQUESTS
@@ -149,7 +214,16 @@ $(() => {
                     body: messageBody
                 }, POST)
                     .done((result) => {
-                        this.addMessageToField(result.data);
+                        this.addMessage({
+                            id: 1,
+                            body: 'Доброе утро',
+                            timestamp: '9:02',
+                            user: {
+                                id: 3,
+                                displayName: 'Товарищ Илья'
+                            },
+                            mention: ['Товарищ Николай', 'Товарищ Виталий'],
+                        });
                         EL.messageTextArea.height(25);
                         EL.messageTextArea.val('');
                     })
@@ -172,25 +246,10 @@ $(() => {
                                 <div class="mt-1 message-body formatted-message-text"></div>
                             </div>
                             <div class="d-flex flex-column justify-content-between message-right-col">
-                                <div class="message-me">Я</div>
+                                <div class="my-message">Я</div>
                                 <div class="d-flex align-self-end message-timestamp">9:00</div>
                             </div>
                          </div>`;
-
-        /* <div class="chat-message d-flex">
-          <div class="message-left-col">
-            <img src="assets/files/users_default_avatars/User avatar.png" alt="User">
-          </div>
-          <div class="d-flex flex-column mx-1 message-center-col">
-            <div class="d-flex align-content-end message-head">
-            </div>
-            <div class="mt-1 message-body">
-            </div>
-          </div>
-          <div class="d-flex flex-column message-right-col">
-            <div class="d-flex align-self-end message-timestamp">9:00</div>
-          </div>
-        </div>*/
 
         const EL = this.elements({
             chatWindow: 'chat',
@@ -239,7 +298,6 @@ $(() => {
                 EL.messagesList.scrollable.css('margin-top', newScrollY);
             }
         });*/
-
 
         EL.chatWindow
             .draggable({

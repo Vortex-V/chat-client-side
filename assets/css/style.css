@@ -110,16 +110,12 @@
     word-wrap: break-word;
 }
 
-.message-me {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.my-message {
     width: 25px;
     height: 25px;
 }
 
 .message-timestamp {
-    flex: 1;
     font-size: 14px;
 }
 
@@ -130,7 +126,7 @@
     cursor: pointer;
 }
 
-.message-mension{
+.message-mention{
     color: rgba(51, 114, 178, 1);
 }
 

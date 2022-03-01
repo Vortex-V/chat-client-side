@@ -31,7 +31,7 @@
     </div>
     <div id="chat-messages-list" class="d-flex">
         <div class="d-flex flex-column align-content-center messages-scrollable">
-            <div class="chat-message justify-content-end d-flex">
+            <div class="chat-message justify-content-end d-flex"><!--FROM ME-->
                 <div class="message-left-col"></div>
                 <div class="d-flex flex-column flex-fill mx-1 message-center-col">
                     <div class="d-flex flex-wrap message-head"></div>
@@ -40,14 +40,14 @@
                     </div>
                 </div>
                 <div class="d-flex flex-column justify-content-between message-right-col">
-                    <div class="message-me">Я</div>
+                    <div class="my-message">Я</div>
                     <div class="d-flex align-self-end message-timestamp">9:01</div>
                 </div>
             </div>
-            <div class="chat-message system-message text-center">
+            <div class="chat-message system-message text-center"><!--SYSTEM-->
                 Товарищ Соловьёв Илья проснулся!
             </div>
-            <div class="chat-message d-flex">
+            <div class="chat-message d-flex"><!--DEFAULT & MENTION-->
                 <div class="message-left-col">
                     <img src="assets/files/users_default_avatars/User avatar.png" alt="User">
                 </div>
@@ -55,7 +55,7 @@
                     <div class="d-flex flex-wrap message-head">
                         Товарищ Николай
                         <div class="text-end w-100">
-                            ответ <span class="message-mension">@Товарищ Виталий</span>
+                            ответ <span class="message-mention">@Товарищ Виталий</span>
                         </div>
                     </div>
                     <div class="mt-1 message-body formatted-message-text">
@@ -68,7 +68,7 @@
                     <div class="d-flex align-self-end message-timestamp">9:00</div>
                 </div>
             </div>
-            <div class="chat-message justify-content-end d-flex">
+            <div class="chat-message justify-content-end d-flex"><!--FROM ME & FILE-->
                 <div class="message-left-col"></div>
                 <div class="d-flex flex-column flex-fill mx-1 message-center-col">
                     <div class="d-flex flex-wrap message-head"></div>
@@ -81,11 +81,11 @@
                     </div>
                 </div>
                 <div class="d-flex flex-column justify-content-between message-right-col">
-                    <div class="message-me">Я</div>
+                    <div class="my-message">Я</div>
                     <div class="d-flex align-self-end message-timestamp">9:01</div>
                 </div>
             </div>
-            <div class="chat-message justify-content-end d-flex">
+            <div class="chat-message justify-content-end d-flex"><!--FROM ME-->
                 <div class="message-left-col"></div>
                 <div class="d-flex flex-column flex-fill mx-1 message-center-col">
                     <div class="d-flex flex-wrap message-head"></div>
@@ -99,11 +99,11 @@
                     </div>
                 </div>
                 <div class="d-flex flex-column justify-content-between message-right-col">
-                    <div class="message-me">Я</div>
+                    <div class="my-message d-flex justify-content-center align-items-center">Я</div>
                     <div class="d-flex align-self-end message-timestamp">9:01</div>
                 </div>
             </div>
-            <div class="chat-message d-flex">
+            <div class="chat-message d-flex"><!--DEFAULT-->
                 <div class="message-left-col">
                     <img src="assets/files/users_default_avatars/User avatar.png" alt="User">
                 </div>
@@ -123,7 +123,7 @@
                     </div>
                 </div>
                 <div class="d-flex flex-column message-right-col">
-                    <div class="d-flex align-self-end message-timestamp">9:00</div>
+                    <div class="message-timestamp">9:00</div>
                 </div>
             </div>
         </div>
