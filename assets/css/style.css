@@ -49,7 +49,7 @@
     outline: none;
 }
 
-#chat-textarea-height{
+#chat-textarea-height {
     max-height: 300px;
     z-index: -1;
     overflow: hidden;
@@ -68,7 +68,6 @@
 }
 
 #chat-messages-list {
-    padding: 10px;
     flex: 1;
     overflow: hidden;
     overflow-y: auto;
@@ -82,6 +81,7 @@
 .chat-message {
     padding-bottom: 20px;
     width: 100%;
+    max-width: 100%;
 }
 
 .chat-message.message-type-my {
@@ -99,6 +99,10 @@
 .message-right-col {
     min-width: 25px;
     user-select: none;
+}
+
+.message-center-col {
+    max-width: calc(100% - .5rem - 50px);
 }
 
 .message-head,
@@ -119,18 +123,18 @@
     font-size: 14px;
 }
 
-.message-attached-file{
+.message-attached-file {
     padding-left: 10px;
     border-left: 2px #94B7DB solid;
     line-height: 25px;
     cursor: pointer;
 }
 
-.message-mention{
+.message-mention {
     color: rgba(51, 114, 178, 1);
 }
 
-.system-message{
+.system-message {
     color: rgba(0, 0, 0, 0.4);;
 }
 

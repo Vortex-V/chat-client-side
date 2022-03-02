@@ -5,6 +5,7 @@ $(() => {
     let session = {
         userId: null,
         roomId: null,
+        displayName: null,
     }
 
     function chatAjax(query, data = null, method = 'get') {
@@ -121,7 +122,7 @@ $(() => {
          * TODO окончательно опеределиться с параметрами
          */
         this.messageDiv = function (id, body, timestamp, user, mention = [], files = []) {
-            let div = $('<div class="chat-message d-flex">');
+            let div = $('<div class="chat-message d-flex">').data('id', id);
 
             let leftColumn = $('<div>', {class: 'message-left-col'});
 
@@ -158,12 +159,10 @@ $(() => {
                     )
                 );
 
-            rightColumn.append(`<div class="message-timestamp">${timestamp}</div>`);
+            rightColumn.append(`<div class="message-timestamp position-absolute bottom-0">${timestamp}</div>`);
 
 
             div.append(leftColumn, centerColumn, rightColumn);
-
-            console.log(div);
             return div;
         }
 
@@ -173,9 +172,22 @@ $(() => {
             console.log(this.response);
         }
 
-        this.getMessagesForRoom = function () {
-            let result = chatAjax(`/message/get?room_id=${1}`);
-            console.log(this.response);
+        this.getRoomMessages = function () {
+            chatAjax(`/room/get?room_id=${session.roomId}`)
+                .done((response) => {
+                    console.log(response);
+                    for (let message of response.data) {
+                        this.addMessage({
+                            id: message.id,
+                            body: message.body,
+                            timestamp: '9:04',
+                            user: {
+                                id: 4,
+                                displayName: 'Товарищ Тестировщик'
+                            },
+                        });
+                    }
+                });
         }
 
         this.createUser = function () {
@@ -213,14 +225,14 @@ $(() => {
                     room_id: session.roomId,
                     body: messageBody
                 }, POST)
-                    .done((result) => {
+                    .done((response) => {
                         this.addMessage({
-                            id: 1,
-                            body: 'Доброе утро',
+                            id: response.data.id,
+                            body: response.data.body,
                             timestamp: '9:02',
                             user: {
-                                id: 3,
-                                displayName: 'Товарищ Илья'
+                                id: session.userId,
+                                displayName: session.displayName
                             },
                             mention: ['Товарищ Николай', 'Товарищ Виталий'],
                         });
@@ -325,10 +337,13 @@ $(() => {
 
 
     // Dev tool
-    chat.startTest = function (userId = 1, roomId = 1) {
+    chat.startTest = function (userId = 1, roomId = 1, displayName = 'Товарищ Виталий') {
         session.userId = userId;
         session.roomId = roomId;
-        this.sendMessage();
+        session.displayName = displayName;
+        chat.getRoomMessages();
         return 1;
     };
+
+    chat.startTest();
 });
