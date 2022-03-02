@@ -139,7 +139,14 @@ $(() => {
             }
 
             if (mention.length) {
-                let mentionDiv = $('<span class="message-mention">').text(mention.length === 1 ? mention[0] : 'пользователям');
+                let mentionDiv = $('<span class="message-mention">')
+                if (mention.length === 1){
+                    mentionDiv.text(mention[0]);
+                } else {
+                    div.data('mention', mention);
+                    mentionDiv.text('пользователям');
+                }
+
                 messageHead
                     .append($('<div class="text-end w-100">ответил(а) </div>')
                         .append(mentionDiv)
@@ -345,5 +352,4 @@ $(() => {
         return 1;
     };
 
-    chat.startTest();
 });
