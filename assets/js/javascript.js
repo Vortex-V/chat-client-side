@@ -124,52 +124,56 @@ $(() => {
         this.messageDiv = function (id, body, timestamp, user, mention = [], files = []) {
             let div = $('<div class="chat-message d-flex">').data('id', id);
 
-            let leftColumn = $('<div>', {class: 'message-left-col'});
-
-            let centerColumn = $('<div class="message-center-col d-flex flex-column flex-fill mx-1">');
-            let messageHead = $('<div class="d-flex flex-wrap message-head">');
-
-            let rightColumn = $('<div class="message-right-col position-relative">');
-
-            if (user.id === session.userId) {
-                rightColumn.append('<div class="my-message d-flex justify-content-center align-items-center">Я</div>');
+            if (user.id === 1) { // Значит это системное сообщение
+                div.addClass('system-message text-center').text(body);
             } else {
-                leftColumn.append('<img alt="user" src="/assets/files/users_default_avatars/User avatar.png">'); //TODO получать src у пользователя
-                messageHead.text(user.displayName);
-            }
+                let leftColumn = $('<div>', {class: 'message-left-col'});
 
-            if (mention.length) {
-                let mentionDiv = $('<span class="message-mention">')
-                if (mention.length === 1){
-                    mentionDiv.text(mention[0]);
+                let centerColumn = $('<div class="message-center-col d-flex flex-column flex-fill mx-1">');
+                let messageHead = $('<div class="d-flex flex-wrap message-head">');
+
+                let rightColumn = $('<div class="message-right-col position-relative">');
+
+                if (user.id === session.userId) {
+                    rightColumn.append('<div class="my-message d-flex justify-content-center align-items-center">Я</div>');
                 } else {
-                    div.data('mention', mention);
-                    mentionDiv.text('пользователям');
+                    leftColumn.append('<img alt="user" src="/assets/files/users_default_avatars/User avatar.png">'); //TODO получать src у пользователя
+                    messageHead.text(user.displayName);
                 }
 
-                messageHead
-                    .append($('<div class="text-end w-100">ответил(а) </div>')
-                        .append(mentionDiv)
+                if (mention.length) {
+                    let mentionDiv = $('<span class="message-mention">')
+                    if (mention.length === 1) {
+                        mentionDiv.text(mention[0]);
+                    } else {
+                        div.data('mention', mention);
+                        mentionDiv.text('пользователям');
+                    }
+
+                    messageHead
+                        .append($('<div class="text-end w-100">ответил(а) </div>')
+                            .append(mentionDiv)
+                        );
+                }
+
+                centerColumn.append(messageHead)
+
+                for (let file of files) {
+                    centerColumn.append(`<div class="message-attached-file">file_${file.id}${" | " + file.name ?? ""}</div>`);
+                }
+
+                centerColumn
+                    .append($('<div class="message-body formatted-message-text mt-1">')
+                        .append($('<div>')
+                            .append(this.splitToDivs(body))
+                        )
                     );
+
+                rightColumn.append(`<div class="message-timestamp position-absolute bottom-0">${timestamp}</div>`);
+
+
+                div.append(leftColumn, centerColumn, rightColumn);
             }
-
-            centerColumn.append(messageHead)
-
-            for (let file of files) {
-                centerColumn.append(`<div class="message-attached-file">file_${file.id}${" | " + file.name ?? ""}</div>`);
-            }
-
-            centerColumn
-                .append($('<div class="message-body formatted-message-text mt-1">')
-                    .append($('<div>')
-                        .append(this.splitToDivs(body))
-                    )
-                );
-
-            rightColumn.append(`<div class="message-timestamp position-absolute bottom-0">${timestamp}</div>`);
-
-
-            div.append(leftColumn, centerColumn, rightColumn);
             return div;
         }
 
