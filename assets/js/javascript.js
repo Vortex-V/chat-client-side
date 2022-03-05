@@ -184,7 +184,7 @@ $(() => {
         }
 
         this.getRoomMessages = function () {
-            chatAjax(`/room/get?room_id=${session.roomId}`)
+            chatAjax(`/getRoomMessages?room_id=${session.roomId}`)
                 .done((response) => {
                     console.log(response);
                     for (let message of response.data) {
@@ -231,16 +231,19 @@ $(() => {
         this.sendMessage = async function () {
             let messageBody = EL.messageTextArea.val();
             if (messageBody) {
-                chatAjax('/message/send', {
+                chatAjax('/sendMessage', {
                     user_id: session.userId,
                     room_id: session.roomId,
                     body: messageBody
                 }, POST)
                     .done((response) => {
+                        d = new Date();
+                        h = d.getHours();
+                        m = d.getMinutes();
                         this.addMessage({
                             id: response.data.id,
                             body: response.data.body,
-                            timestamp: '9:02',
+                            timestamp: h+':'+m, //TODO заменить на данные из API
                             user: {
                                 id: session.userId,
                                 displayName: session.displayName
@@ -355,5 +358,7 @@ $(() => {
         chat.getRoomMessages();
         return 1;
     };
+
+    chat.startTest();
 
 });
