@@ -1,0 +1,23 @@
+{
+  "name": "click2mice/chat-widget",
+  "description": "chat widget for yii",
+  "type": "project",
+  "require": {
+    "php": ">=7.4",
+    "yiisoft/widget": "dev-master",
+    "ext-json": "*"
+  },
+  "license": "MIT",
+  "autoload": {
+    "classmap": [
+      ""
+    ]
+  },
+  "authors": [
+    {
+      "name": "Vortex-V",
+      "email": "vitalik124124@mail.ru"
+    }
+  ],
+  "minimum-stability": "dev"
+}

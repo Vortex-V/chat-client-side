@@ -5,6 +5,16 @@
       <excludeFolder url="file://$MODULE_DIR$/temp" />
       <excludeFolder url="file://$MODULE_DIR$/.tmp" />
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/yiisoft/json" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/yiisoft/factory" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/yiisoft/arrays" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/yiisoft/strings" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/psr/container" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/composer" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/yiisoft/widget" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/yiisoft/html" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/yiisoft/friendly-exception" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/yiisoft/definitions" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

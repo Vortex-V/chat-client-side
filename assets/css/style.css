@@ -1,20 +1,24 @@
 #chat {
-    position: fixed !important;
     bottom: 10px;
     right: 10px;
     width: 360px;
     height: 560px;
-
     transition-timing-function: cubic-bezier(.1, .57, .21, .98);
     transition-duration: 0.5s;
 
     background: #ECF6FC;
+    z-index: 1000;
 }
 
 #chat.closed {
-    height: 20px;
+    height: 25px;
     top: auto !important;
     bottom: 0 !important;
+    overflow: hidden;
+}
+
+#chat.ui-draggable-dragging {
+    box-shadow: 2px 3px 9px 3px #0000006b;
 }
 
 #chat-top-panel {
@@ -69,13 +73,13 @@
 
 #chat-messages-list {
     flex: 1;
-    overflow: hidden;
-    overflow-y: auto;
+    height: inherit;
     background: inherit;
+    overflow-y: auto;
 }
 
 #chat-messages-list > div {
-    width: inherit;
+    flex: 1;
 }
 
 .chat-message {
@@ -117,10 +121,11 @@
 .my-message {
     width: 25px;
     height: 25px;
+    margin-bottom: 25px;
 }
 
 .message-timestamp {
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .message-attached-file {
@@ -155,7 +160,7 @@
     background-image: url('../files/arrow.svg');
 }
 
-#c2m-chat.closed .chat-arrow-svg {
+#chat.closed .chat-arrow-svg {
     transform: rotateX(180deg);
 }
 

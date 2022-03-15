@@ -1,8 +1,7 @@
 $(() => {
     const API = 'http://chat.api.click2mice.local',
-        POST = 'post',
-        GET = 'get'
-    let session = {
+        POST = 'post'
+    const session = {
         userId: null,
         roomId: null,
         displayName: null,
@@ -48,9 +47,11 @@ $(() => {
             throw message;
         };
 
-        this.toggleOpen = function () {
+        this.toggleOpen = function (check = true) {
             EL.chatWindow.toggleClass('closed');
-            this.checkIsClosed();
+            if (check) {
+                this.checkIsClosed();
+            }
         }
 
         /**
@@ -64,6 +65,23 @@ $(() => {
                 chatWindow.draggable('enable');
                 EL.messageTextArea.focus();
             }
+        }
+
+        this.setDraggable = function () {
+            EL.chatWindow
+                .draggable({
+                    handle: EL.topPanel,
+                    stack: this.chatWindow,
+                    disabled: true,
+                    start: function (event, ui) {
+                        allowClickOnTopPanel = false;
+                    },
+                    stop: function () {
+                        setTimeout(() => { // Не даёт произойти автоматическому закрытию окна сразу после перетаскивания
+                            allowClickOnTopPanel = true;
+                        }, 1);
+                    }
+                });
         }
 
         /**
@@ -137,7 +155,7 @@ $(() => {
                 if (user.id === session.userId) {
                     rightColumn.append('<div class="my-message d-flex justify-content-center align-items-center">Я</div>');
                 } else {
-                    leftColumn.append('<img alt="user" src="/assets/files/users_default_avatars/User avatar.png">'); //TODO получать src у пользователя
+                    leftColumn.append('<img alt="user" src="/assets/files/users_default_avatars/User%20avatar.svg">'); //TODO получать src у пользователя или отказаться
                     messageHead.text(user.displayName);
                 }
 
@@ -177,6 +195,15 @@ $(() => {
             return div;
         }
 
+        this.getTime = function () {
+            d = new Date();
+            h = d.getHours();
+            h / 10 < 1 ? h = '0' + h : h;
+            m = d.getMinutes();
+            m / 10 < 1 ? m = '0' + m : m;
+            return h + ':' + m;
+        }
+
         // REQUESTS
         this.getRoom = function () {
             let result = chatAjax(`/room/get?room_id=${session.roomId}`);
@@ -186,15 +213,14 @@ $(() => {
         this.getRoomMessages = function () {
             chatAjax(`/getRoomMessages?room_id=${session.roomId}`)
                 .done((response) => {
-                    console.log(response);
-                    for (let message of response.data) {
+                    for (let message of response) {
                         this.addMessage({
                             id: message.id,
                             body: message.body,
-                            timestamp: '9:04',
+                            timestamp: this.getTime(),
                             user: {
-                                id: 4,
-                                displayName: 'Товарищ Тестировщик'
+                                id: message.user.id,
+                                displayName: message.user.display_name
                             },
                         });
                     }
@@ -237,18 +263,14 @@ $(() => {
                     body: messageBody
                 }, POST)
                     .done((response) => {
-                        d = new Date();
-                        h = d.getHours();
-                        m = d.getMinutes();
                         this.addMessage({
-                            id: response.data.id,
-                            body: response.data.body,
-                            timestamp: h+':'+m, //TODO заменить на данные из API
+                            id: response.id,
+                            body: response.body,
+                            timestamp: this.getTime(), //TODO заменить на данные из API
                             user: {
                                 id: session.userId,
                                 displayName: session.displayName
                             },
-                            mention: ['Товарищ Николай', 'Товарищ Виталий'],
                         });
                         EL.messageTextArea.height(25);
                         EL.messageTextArea.val('');
@@ -265,18 +287,6 @@ $(() => {
 
         // ELEMENTS
 
-        const MESSAGE = `<div class="chat-message d-flex">
-                            <div class="message-left-col"></div>
-                            <div class="d-flex flex-column mx-1 message-center-col">
-                                <div class="d-flex align-items-end message-head"></div>
-                                <div class="mt-1 message-body formatted-message-text"></div>
-                            </div>
-                            <div class="d-flex flex-column justify-content-between message-right-col">
-                                <div class="my-message">Я</div>
-                                <div class="d-flex align-self-end message-timestamp">9:00</div>
-                            </div>
-                         </div>`;
-
         const EL = this.elements({
             chatWindow: 'chat',
             topPanel: 'chat-top-panel',
@@ -285,6 +295,12 @@ $(() => {
             messagesList: 'chat-messages-list',
             buttonSendMessage: 'chat-send-message',
         });
+
+
+        const allowedOnLoadFunctions = [
+            'toggleOpen',
+            'setDraggable',
+        ];
 
         /* Открывает окно чата при нажатии Ctrl+Shift+ArrowUp
         TODO: сделать комбинацию клавиш настриваемой */
@@ -312,53 +328,36 @@ $(() => {
 
         EL.buttonSendMessage.click(this.sendMessage);
 
-        /* TODO убрать полностью либо доработать */
-        /*EL.messagesList.scrollable = EL.messagesList.children('.msgs-scrollable');
-        EL.messagesList.on('wheel', (e) => {
-            let newScrollY = parseInt(EL.messagesList.scrollable.css('margin-top')) - e.originalEvent.deltaY * 2;
-            let absNewScrollY = Math.abs(newScrollY);
-            let maxScrollY = EL.messagesList.maxScrollY;
-            if (newScrollY <= 0 && absNewScrollY <= maxScrollY) {
-                if (absNewScrollY < 200) newScrollY = 0;
-                else if (absNewScrollY > maxScrollY - 200) newScrollY = -maxScrollY;
-                EL.messagesList.scrollable.css('margin-top', newScrollY);
-            }
-        });*/
+        let config = JSON.parse(EL.chatWindow.attr('data-config')) ?? {};
+        EL.chatWindow.removeAttr('data-config');
+        if (config.css) {
+            EL.chatWindow.css(config.css);
+        }
 
-        EL.chatWindow
-            .draggable({
-                handle: EL.topPanel,
-                stack: this.chatWindow,
-                disabled: true,
-                start: function (event, ui) {
-                    allowClickOnTopPanel = false;
-                },
-                stop: function () {
-                    setTimeout(() => { // Не даёт произойти автоматическому закрытию окна сразу после перетаскивания
-                        allowClickOnTopPanel = true;
-                    }, 1);
+        if (config.chatLoad) {
+            for (let name in config.chatLoad) {
+                if (allowedOnLoadFunctions.includes(name)) {
+                    this[name](config.chatLoad[name]);
                 }
-            })
-            .addClass('closed')
-            .show();
+            }
+
+        }
     }
 
-    let chat = window.chat = new Chat();
+    const chat = window.chat = new Chat();
+
+    let chatWindow = chat.elements.list.chatWindow;
+
+    let sessionData = JSON.parse(chatWindow.attr('data-session')) ?? null;
+    if (sessionData) {
+        session.userId = sessionData.userId;
+        session.roomId = sessionData.roomId;
+        session.displayName = sessionData.displayName;
+    }
+    chatWindow.removeAttr('data-session');
 
     /* Чтобы не стёртый ранее текст из поля ввода сообщения
        влиял на высоту блока ввода после обновления страницы */
     chat.updateFieldHeight();
-
-
-    // Dev tool
-    chat.startTest = function (userId = 1, roomId = 1, displayName = 'Товарищ Виталий') {
-        session.userId = userId;
-        session.roomId = roomId;
-        session.displayName = displayName;
-        chat.getRoomMessages();
-        return 1;
-    };
-
-    chat.startTest();
-
+    chat.getRoomMessages();
 });
