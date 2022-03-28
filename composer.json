@@ -3,8 +3,6 @@
   "description": "chat widget for yii",
   "type": "project",
   "license": "MIT",
-  "minimum-stability": "dev",
-  "prefer-stable": true,
   "require": {
     "php": ">=7.4",
     "yiisoft/widget": "dev-master",
