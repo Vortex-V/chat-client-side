@@ -9,10 +9,17 @@ $config = $config ?? [
         'css' => [
             'position' => 'fixed',
         ],
-        'chatLoad' => [
-            'setDraggable' => null,
-            'toggleOpen' => false,
-            'test' => null
+        'onLoad' => [
+            [
+                'function' => 'setDraggable',
+            ],
+            [
+                'function' => 'toggleOpen',
+                'args' => false,
+            ],
+            [
+                'function' => 'test',
+            ],
         ]
     ];
 $session = $session ?? [
@@ -42,7 +49,7 @@ $session = $session ?? [
         </div>
     </div>
     <div id="chat-messages-list" class="d-flex p-2">
-        <div class="d-flex flex-column align-content-center messages-scrollable">
+        <div class="d-flex flex-column align-content-center w-100">
             <div class="chat-message justify-content-end d-flex"><!--FROM ME-->
                 <div class="message-left-col"></div>
                 <div class="d-flex flex-column flex-fill mx-1 message-center-col">

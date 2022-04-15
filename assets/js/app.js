@@ -1,11 +1,11 @@
 $(() => {
     const API = 'http://chat.api.click2mice.local',
-        POST = 'post'
-    const session = {
-        userId: null,
-        roomId: null,
-        displayName: null,
-    }
+        POST = 'post',
+        SESSION = {
+            userId: null,
+            roomId: null,
+            displayName: null,
+        }
 
     function chatAjax(query, data = null, method = 'get') {
         let options = {
@@ -15,7 +15,7 @@ $(() => {
         if (data) options.data = JSON.stringify(data)
         return $.ajax(API + query, options)
             .fail((jqXHR) => {
-                console.log(jqXHR.responseJSON.errors)
+                console.log(jqXHR.responseJSON)
             });
     }
 
@@ -47,41 +47,30 @@ $(() => {
             throw message;
         };
 
-        this.toggleOpen = function (check = true) {
-            EL.chatWindow.toggleClass('closed');
-            if (check) {
-                this.checkIsClosed();
-            }
-        }
-
-        /**
-         * TODO подумать над тем, оставлять ли эту функцию или объединить с toggleOpen()
-         */
-        this.checkIsClosed = function () {
-            let chatWindow = EL.chatWindow;
-            if (chatWindow.hasClass('closed')) {
-                chatWindow.draggable('disable');
+        this.toggleOpen = function (triggerEvents = true) {
+            if (this.hasClass('closed')) {
+                this.removeClass('closed');
+                if (triggerEvents) this.trigger('chatOpen');
             } else {
-                chatWindow.draggable('enable');
-                EL.messageTextArea.focus();
+                this.addClass('closed');
+                if (triggerEvents) this.trigger('chatClose');
             }
         }
 
         this.setDraggable = function () {
-            EL.chatWindow
-                .draggable({
-                    handle: EL.topPanel,
-                    stack: this.chatWindow,
-                    disabled: true,
-                    start: function (event, ui) {
-                        allowClickOnTopPanel = false;
-                    },
-                    stop: function () {
-                        setTimeout(() => { // Не даёт произойти автоматическому закрытию окна сразу после перетаскивания
-                            allowClickOnTopPanel = true;
-                        }, 1);
-                    }
-                });
+            this.draggable({
+                handle: EL.topPanel,
+                stack: this,
+                disabled: true,
+                start: function () {
+                    allowClickOnTopPanel = false;
+                },
+                stop: function () {
+                    setTimeout(() => { // Не даёт произойти автоматическому закрытию окна сразу после перетаскивания
+                        allowClickOnTopPanel = true;
+                    }, 1);
+                }
+            });
         }
 
         /**
@@ -140,6 +129,7 @@ $(() => {
          * TODO окончательно опеределиться с параметрами
          */
         this.messageDiv = function (id, body, timestamp, user, mention = [], files = []) {
+
             let div = $('<div class="chat-message d-flex">').data('id', id);
 
             if (user.id === 1) { // Значит это системное сообщение
@@ -152,10 +142,10 @@ $(() => {
 
                 let rightColumn = $('<div class="message-right-col position-relative">');
 
-                if (user.id === session.userId) {
+                if (user.id === SESSION.userId) {
                     rightColumn.append('<div class="my-message d-flex justify-content-center align-items-center">Я</div>');
                 } else {
-                    leftColumn.append('<img alt="user" src="/assets/files/users_default_avatars/User%20avatar.svg">'); //TODO получать src у пользователя или отказаться
+                    leftColumn.append('<img alt="user" src="/assets/files/users_default_avatars/User%20avatar.svg">'); //TODO получать src у пользователя или подумать ещё раз
                     messageHead.text(user.displayName);
                 }
 
@@ -195,6 +185,9 @@ $(() => {
             return div;
         }
 
+
+        // КОСТЫЛЬ
+
         this.getTime = function () {
             d = new Date();
             h = d.getHours();
@@ -204,14 +197,19 @@ $(() => {
             return h + ':' + m;
         }
 
+        // END КОСТЫЛЬ
+
         // REQUESTS
         this.getRoom = function () {
-            let result = chatAjax(`/room/get?room_id=${session.roomId}`);
-            console.log(this.response);
+            chatAjax(`/getRoom` +
+                `?room_id=${SESSION.roomId}` +
+                `&user_id${SESSION.userId}`);
         }
 
         this.getRoomMessages = function () {
-            chatAjax(`/getRoomMessages?room_id=${session.roomId}`)
+            chatAjax(`/getRoomMessages` +
+                `?room_id=${SESSION.roomId}` +
+                `&user_id=${SESSION.userId}`)
                 .done((response) => {
                     for (let message of response) {
                         this.addMessage({
@@ -228,38 +226,34 @@ $(() => {
         }
 
         this.createUser = function () {
-            let result = chatAjax(`/user/create`, {
+            chatAjax(`/user/create`, {
                 display_name: 'TEST USER'
             }, POST);
-            console.log(this.response);
         }
 
         this.createRoom = function () {
-            let result = chatAjax(`/room/create`, null, POST);
-            console.log(this.response);
+            chatAjax(`/room/create`, null, POST);
         }
 
         this.addUserToRoom = function () {
-            let result = chatAjax(`/room/create`, {
+            chatAjax(`/room/create`, {
                 room_id: 1,
                 user_id: 2
             }, POST);
-            console.log(this.response);
         }
 
         this.syncRoomUsers = function () {
-            let result = chatAjax(`/room/create`, {
+            chatAjax(`/room/create`, {
                 room_id: 1,
             }, POST);
-            console.log(this.response);
         }
 
         this.sendMessage = async function () {
             let messageBody = EL.messageTextArea.val();
             if (messageBody) {
                 chatAjax('/sendMessage', {
-                    user_id: session.userId,
-                    room_id: session.roomId,
+                    user_id: SESSION.userId,
+                    room_id: SESSION.roomId,
                     body: messageBody
                 }, POST)
                     .done((response) => {
@@ -268,8 +262,8 @@ $(() => {
                             body: response.body,
                             timestamp: this.getTime(), //TODO заменить на данные из API
                             user: {
-                                id: session.userId,
-                                displayName: session.displayName
+                                id: SESSION.userId,
+                                displayName: SESSION.displayName
                             },
                         });
                         EL.messageTextArea.height(25);
@@ -288,14 +282,12 @@ $(() => {
         // ELEMENTS
 
         const EL = this.elements({
-            chatWindow: 'chat',
             topPanel: 'chat-top-panel',
             messageTextArea: 'chat-message-textarea',
             textAreaHeight: 'chat-textarea-height',
             messagesList: 'chat-messages-list',
             buttonSendMessage: 'chat-send-message',
         });
-
 
         const allowedOnLoadFunctions = [
             'toggleOpen',
@@ -328,36 +320,49 @@ $(() => {
 
         EL.buttonSendMessage.click(this.sendMessage);
 
-        let config = JSON.parse(EL.chatWindow.attr('data-config')) ?? {};
-        EL.chatWindow.removeAttr('data-config');
-        if (config.css) {
-            EL.chatWindow.css(config.css);
-        }
+        // END ELEMENTS
 
-        if (config.chatLoad) {
-            for (let name in config.chatLoad) {
-                if (allowedOnLoadFunctions.includes(name)) {
-                    this[name](config.chatLoad[name]);
+
+        // EVENTS
+
+        this.on('chatOpen',
+            () => {
+                EL.messageTextArea.focus();
+                this.draggable('enable');
+            },
+        )
+            .on('chatClose', () => {
+                this.draggable('disable');
+            })
+            .on('load', () => {
+                let config = JSON.parse(this.attr('data-config')) ?? null;
+                this.removeAttr('data-config');
+                if (config) {
+                    if (config.css) this.css(config.css);
+                    if (config.onLoad) {
+                        config.onLoad.forEach((i) => {
+                            if (i.function && allowedOnLoadFunctions.includes(i.function)) {
+                                this[i.function](i.args ?? null)
+                            }
+                        })
+                    }
                 }
-            }
 
-        }
+                let sessionData = JSON.parse(this.attr('data-session')) ?? null;
+                this.removeAttr('data-session');
+                if (sessionData) {
+                    SESSION.userId = sessionData.userId;
+                    SESSION.roomId = sessionData.roomId;
+                    SESSION.displayName = sessionData.displayName;
+                }
+
+                this.updateFieldHeight(); //Чтобы не стёртый ранее текст из поля ввода сообщения влиял на высоту блока ввода после обновления страницы
+                this.getRoomMessages();
+            })
     }
+
+    Chat.prototype = $('#chat');
 
     const chat = window.chat = new Chat();
-
-    let chatWindow = chat.elements.list.chatWindow;
-
-    let sessionData = JSON.parse(chatWindow.attr('data-session')) ?? null;
-    if (sessionData) {
-        session.userId = sessionData.userId;
-        session.roomId = sessionData.roomId;
-        session.displayName = sessionData.displayName;
-    }
-    chatWindow.removeAttr('data-session');
-
-    /* Чтобы не стёртый ранее текст из поля ввода сообщения
-       влиял на высоту блока ввода после обновления страницы */
-    chat.updateFieldHeight();
-    chat.getRoomMessages();
+    chat.trigger('load');
 });
