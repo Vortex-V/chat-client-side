@@ -48,8 +48,8 @@ $session = $session ?? [
             <div id="chat-send-message" class="chat-svg chat-send-message-svg"></div>
         </div>
     </div>
-    <div id="chat-messages-list" class="d-flex p-2">
-        <div class="d-flex flex-column align-content-center w-100">
+    <div class="d-flex p-2 position-relative scrollable">
+        <div id="chat-messages-list" class="list d-flex flex-column align-content-center w-100">
             <div class="chat-message justify-content-end d-flex"><!--FROM ME-->
                 <div class="message-left-col"></div>
                 <div class="d-flex flex-column flex-fill mx-1 message-center-col">
@@ -148,5 +148,10 @@ $session = $session ?? [
                 </div>
             </div>
         </div>
+        <ul id="chat-message-contextmenu" class="menu py-2 px-0 m-0 position-absolute" style="display: none">
+            <li class="py-2 px-4">Ответить</li>
+            <li class="py-2 px-4">Ответить пользователю</li>
+            <li class="py-2 px-4">Переслать</li>
+        </ul>
     </div>
 </div>

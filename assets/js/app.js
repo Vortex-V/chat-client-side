@@ -5,17 +5,17 @@ $(() => {
             userId: null,
             roomId: null,
             displayName: null,
-        }
+        };
 
     function chatAjax(query, data = null, method = 'get') {
         let options = {
             method: method,
             contentType: 'application/json',
         };
-        if (data) options.data = JSON.stringify(data)
+        if (data) options.data = JSON.stringify(data);
         return $.ajax(API + query, options)
             .fail((jqXHR) => {
-                console.log(jqXHR.responseJSON)
+                console.log(jqXHR.responseJSON);
             });
     }
 
@@ -109,7 +109,7 @@ $(() => {
          * }}
          */
         this.addMessage = function (data) {
-            EL.messagesList.children().prepend(this.messageDiv(data.id, data.body, data.timestamp, data.user, data.mention, data.files));
+            EL.messagesList.prepend(this.messageDiv(data.id, data.body, data.timestamp, data.user, data.mention, data.files)); // TODO объединить в 1 функцию
         }
 
         /**
@@ -138,19 +138,22 @@ $(() => {
                 let leftColumn = $('<div>', {class: 'message-left-col'});
 
                 let centerColumn = $('<div class="message-center-col d-flex flex-column flex-fill mx-1">');
-                let messageHead = $('<div class="d-flex flex-wrap message-head">');
+                let messageHead = $('<div class="d-flex flex-wrap message-head px-1">');
 
-                let rightColumn = $('<div class="message-right-col position-relative">');
+                let rightColumn = $('<div class="message-right-col d-flex flex-column align-items-center justify-content-end">');
 
                 if (user.id === SESSION.userId) {
-                    rightColumn.append('<div class="my-message d-flex justify-content-center align-items-center">Я</div>');
+                    rightColumn
+                        .removeClass('justify-content-end')
+                        .addClass('justify-content-between')
+                        .append('<div class="my-message d-flex justify-content-center align-items-center">Я</div>');
                 } else {
                     leftColumn.append('<img alt="user" src="/assets/files/users_default_avatars/User%20avatar.svg">'); //TODO получать src у пользователя или подумать ещё раз
                     messageHead.text(user.displayName);
                 }
 
                 if (mention.length) {
-                    let mentionDiv = $('<span class="message-mention">')
+                    let mentionDiv = $('<span class="message-mention">');
                     if (mention.length === 1) {
                         mentionDiv.text(mention[0]);
                     } else {
@@ -171,18 +174,39 @@ $(() => {
                 }
 
                 centerColumn
-                    .append($('<div class="message-body formatted-message-text mt-1">')
+                    .append($('<div class="message-body formatted-message-text mt-1 px-1">')
                         .append($('<div>')
                             .append(this.splitToDivs(body))
                         )
                     );
 
-                rightColumn.append(`<div class="message-timestamp position-absolute bottom-0">${timestamp}</div>`);
+                rightColumn.append(`<div class="message-timestamp">${timestamp}</div>`);
 
 
                 div.append(leftColumn, centerColumn, rightColumn);
             }
+
+            div.contextmenu(this.contextMenu);
+
             return div;
+        }
+
+        this.contextMenu = function (e) {
+            e.preventDefault();
+            let x = e.originalEvent.layerX,
+                y = e.originalEvent.layerY,
+                messagesList = EL.messagesList,
+                messageContextMenu = EL.messageContextMenu;
+            while (messagesList.width() - x < 250) {
+                x -= 30;
+            }
+            /*while (messagesList.height() - y < messageContextMenu.height()) {
+                y -= 10;
+            }*/
+            messageContextMenu.css({
+                left: x,
+                top: y,
+            }).show('fadeIn');
         }
 
 
@@ -279,7 +303,7 @@ $(() => {
         // END FUNCTIONS
 
 
-        // ELEMENTS
+        // ELEMENTS & CONSTANTS
 
         const EL = this.elements({
             topPanel: 'chat-top-panel',
@@ -287,6 +311,7 @@ $(() => {
             textAreaHeight: 'chat-textarea-height',
             messagesList: 'chat-messages-list',
             buttonSendMessage: 'chat-send-message',
+            messageContextMenu: 'chat-message-contextmenu',
         });
 
         const allowedOnLoadFunctions = [
@@ -294,18 +319,15 @@ $(() => {
             'setDraggable',
         ];
 
+        // END ELEMENTS & CONSTANTS
+
+        // EVENTS
+
         /* Открывает окно чата при нажатии Ctrl+Shift+ArrowUp
         TODO: сделать комбинацию клавиш настриваемой */
-        $(window).keydown((e) => {
+        $(document).keydown((e) => {
             let keyEvent = e.originalEvent;
             if (keyEvent.keyCode === 38 && keyEvent.shiftKey && keyEvent.ctrlKey) {
-                this.toggleOpen();
-            }
-        });
-
-        let allowClickOnTopPanel = EL.topPanel.click.allow = true;
-        EL.topPanel.click(() => {
-            if (allowClickOnTopPanel) {
                 this.toggleOpen();
             }
         });
@@ -318,12 +340,12 @@ $(() => {
                 }
             });
 
-        EL.buttonSendMessage.click(this.sendMessage);
-
-        // END ELEMENTS
-
-
-        // EVENTS
+        let allowClickOnTopPanel = EL.topPanel.click.allow = true;
+        EL.topPanel.click(() => {
+            if (allowClickOnTopPanel) {
+                this.toggleOpen();
+            }
+        });
 
         this.on('chatOpen',
             () => {
@@ -359,10 +381,30 @@ $(() => {
                 this.updateFieldHeight(); //Чтобы не стёртый ранее текст из поля ввода сообщения влиял на высоту блока ввода после обновления страницы
                 this.getRoomMessages();
             })
+
+        EL.buttonSendMessage.click(this.sendMessage);
+
+        EL.messageContextMenu.mouseleave(function () {
+            $(this).hide('slideDown');
+        });
+
     }
 
     Chat.prototype = $('#chat');
 
     const chat = window.chat = new Chat();
     chat.trigger('load');
+
+    //DEV
+
+    /**
+     * @param fn
+     */
+    function time(fn) {
+        const name = fn.name === '' ? 'function' : fn.name;
+        console.time(name);
+        let res = fn();
+        console.timeEnd(name);
+        return res;
+    }
 });

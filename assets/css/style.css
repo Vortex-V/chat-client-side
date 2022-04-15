@@ -1,3 +1,10 @@
+:root {
+    --chat-primary: #339933;
+    --chat-bg: #ECF6FC;
+    --chat-gradient: linear-gradient(90deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0) 100%);
+    --chat-hover: rgba(50, 153, 50, 0.15);
+}
+
 #chat {
     bottom: 10px;
     right: 10px;
@@ -6,7 +13,7 @@
     transition-timing-function: cubic-bezier(.1, .57, .21, .98);
     transition-duration: 0.5s;
 
-    background: #ECF6FC;
+    background: var(--chat-bg);
     z-index: 1000;
 }
 
@@ -23,14 +30,14 @@
 
 #chat-top-panel {
     min-height: 25px;
-    background: linear-gradient(90deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0) 100%), #339933;
+    background: var(--chat-gradient), var(--chat-primary);
 }
 
 .chat-message-input-region {
     padding: 5px 10px;
     box-sizing: border-box;
     background: inherit;
-    border-bottom: 1px #339933 solid;
+    border-bottom: 1px var(--chat-primary) solid;
 }
 
 .chat-message-input-region > * {
@@ -71,7 +78,7 @@
     word-wrap: break-word;
 }
 
-#chat-messages-list {
+.scrollable {
     overflow-y: auto;
 }
 
@@ -79,6 +86,7 @@
     padding-bottom: 20px;
     width: 100%;
 }
+
 
 .chat-message.message-type-my {
     /* text-align: right;*/
@@ -97,23 +105,32 @@
     user-select: none;
 }
 
+.message-right-col {
+    min-width: 30px;
+}
+
 .message-center-col {
-    max-width: calc(100% - .5rem - 50px);
+    max-width: calc(100% - .5rem - 55px);
 }
 
 .message-head,
 .message-right-col {
-    color: rgb(153, 153, 153);
+    color: var(--bs-gray);
 }
 
 .message-body {
     word-wrap: break-word;
 }
 
+.message-body:hover {
+    transition-duration: .5s;
+    border-radius: 5px;
+    background-color: var(--chat-hover);
+}
+
 .my-message {
     width: 25px;
     height: 25px;
-    margin-bottom: 25px;
 }
 
 .message-timestamp {
@@ -128,11 +145,35 @@
 }
 
 .message-mention {
-    color: rgba(51, 114, 178, 1);
+    color: var(--bs-blue);
 }
 
 .system-message {
-    color: rgba(0, 0, 0, 0.4);;
+    color: var(--bs-gray);
+}
+
+#chat-message-contextmenu {
+    border-top: 2px var(--chat-primary) solid;
+    background-color: var(--chat-bg);
+    list-style: none;
+    transform-origin: left;
+    overflow: hidden;
+}
+
+#chat-message-contextmenu > * {
+    min-width: 250px;
+}
+
+#chat-message-contextmenu > *:hover {
+    background-color: var(--chat-hover);
+    cursor: default;
+}
+
+
+#chat .menu-show {
+    transform-origin: top left;
+    transition-duration: .5s;
+    /*  animation: menu-show 1s ease-in-out forwards;*/
 }
 
 .chat-svg {
