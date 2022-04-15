@@ -6,7 +6,6 @@
   "minimum-stability": "dev",
   "require": {
     "php": ">=7.4",
-    "yiisoft/widget": "dev-master",
     "ext-json": "*"
   },
   "autoload": {

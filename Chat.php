@@ -2,7 +2,7 @@
 
 namespace chat;
 
-final class Chat extends \Yiisoft\Widget\Widget
+final class Chat
 {
 
     /**
