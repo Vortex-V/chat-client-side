@@ -25,7 +25,6 @@ $config = $config ?? [
 $session = $session ?? [
         'userId' => 2,
         'roomId' => 1,
-        'displayName' => 'Guest',
     ]
 ?>
 <div id="chat" class="main d-flex flex-column"

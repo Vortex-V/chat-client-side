@@ -1,13 +1,8 @@
 $(() => {
     const API = 'http://chat.api.click2mice.local',
         POST = 'post',
-        GET = 'get',
-        SESSION = {
-            userId: null,
-            roomId: null,
-            displayName: null,
-            users: null,
-        };
+        GET = 'get';
+    let users = null;
 
     function chatAjax(query, data = null, method = GET) {
         let options = {
@@ -98,8 +93,7 @@ $(() => {
             EL.textAreaHeight.children()
                 .replaceWith($('<div>')
                     .append(
-                        this.splitToDivs(EL.messageTextArea.val()
-                        )
+                        this.splitToDivs(EL.messageTextArea.val())
                     )
                 );
             EL.messageTextArea.height(EL.textAreaHeight.height());
@@ -140,14 +134,14 @@ $(() => {
                 let rightColumn = $('<div class="message-right-col d-flex flex-column align-items-center justify-content-end">');
 
                 // Это сообщение мое или чьё-то
-                if (user_id === SESSION.userId) {
+                if (user_id === sessionStorage.userId) {
                     rightColumn
                         .removeClass('justify-content-end')
                         .addClass('justify-content-between')
                         .append('<div class="my-message d-flex justify-content-center align-items-center">Я</div>');
                 } else {
                     leftColumn.append('<img alt="user" src="/assets/files/users_default_avatars/User%20avatar.svg">'); //TODO получать src у пользователя или подумать ещё раз
-                    messageHead.text(USERS[user_id].displayName);
+                    messageHead.text(sessionStorage.users[user_id].displayName);
                 }
 
                 // Является ли сообщение ответом кому-то
@@ -240,7 +234,7 @@ $(() => {
 
         // REQUESTS
         this.getRoomMessages = function () {
-            chatAjax(`/getRoomMessages/${SESSION.roomId}/${SESSION.userId}`,
+            chatAjax(`/getRoomMessages/${sessionStorage.roomId}/${sessionStorage.userId}`,
                 {
                     params: {
                         limit: 20,
@@ -248,18 +242,22 @@ $(() => {
                     }
                 })
                 .done((response) => {
-                    for (let message of response) {
-                        this.viewMessage(message);
+                    if (typeof response === 'object') {
+                        for (let message of response) {
+                            this.viewMessage(message);
+                        }
+                    } else {
+                        this.throwException('Ошибка на стороне сервера');
                     }
                 });
         }
 
-        this.sendMessage = async function () {
+        this.sendMessage = function () {
             let messageBody = EL.messageTextArea.val();
             if (messageBody) {
                 chatAjax('/sendMessage', {
-                    user_id: SESSION.userId,
-                    room_id: SESSION.roomId,
+                    user_id: sessionStorage.userId,
+                    room_id: sessionStorage.roomId,
                     body: messageBody
                 }, POST)
                     .done((message) => {
@@ -268,6 +266,23 @@ $(() => {
                         EL.messageTextArea.val('');
                     });
             }
+        }
+
+        this.getRoomUsers = function () {
+            chatAjax(`/getRoomUsers/${sessionStorage.roomId}`)
+                /** @param users {{
+                 *      id: {
+                 *          displayName: string,
+                 *      }
+                 *  }}
+                 * */
+                .done((users) => {
+                    if (typeof users === 'object') {
+                        sessionStorage.setItem('users', JSON.stringify(users));
+                    } else {
+                        this.throwException('Ошибка на стороне сервера');
+                    }
+                });
         }
 
         // END REQUESTS
@@ -342,13 +357,18 @@ $(() => {
                     }
                 }
 
-                let sessionData = JSON.parse(this.attr('data-session')) ?? null;
-                this.removeAttr('data-session');
-                if (sessionData) {
-                    SESSION.userId = sessionData.userId;
-                    SESSION.roomId = sessionData.roomId;
-                    SESSION.displayName = sessionData.displayName;
+                if (sessionStorage.path !== location.pathname) {
+                    let sessionData = JSON.parse(this.attr('data-session')) ?? null;
+                    if (sessionData) {
+                        for (const key in sessionData) {
+                            sessionStorage.setItem(key, sessionData[key]); // TODO вероятно, не совсем безопасно хранить id пользователя и комнаты тут
+                        }
+                    }
+                    this.getRoomUsers(); // устанавливает sessionStorage.users
+                    sessionStorage.path = location.pathname;
                 }
+                this.removeAttr('data-session');
+                users = JSON.parse(sessionStorage.users);
 
                 this.updateFieldHeight(); //Чтобы не стёртый ранее текст из поля ввода сообщения влиял на высоту блока ввода после обновления страницы
                 this.getRoomMessages();
