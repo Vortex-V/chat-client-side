@@ -1,18 +1,26 @@
 $(() => {
     const API = 'http://chat.api.click2mice.local',
         POST = 'post',
+        GET = 'get',
         SESSION = {
             userId: null,
             roomId: null,
             displayName: null,
+            users: null,
         };
 
-    function chatAjax(query, data = null, method = 'get') {
+    function chatAjax(query, data = null, method = GET) {
         let options = {
             method: method,
             contentType: 'application/json',
         };
-        if (data) options.data = JSON.stringify(data);
+        if (data) {
+            if (method === GET) {
+                options.data = data;
+            } else {
+                options.data = JSON.stringify(data);
+            }
+        }
         return $.ajax(API + query, options)
             .fail((jqXHR) => {
                 console.log(jqXHR.responseJSON);
@@ -20,7 +28,6 @@ $(() => {
     }
 
     let Chat = function () {
-
         // FUNCTIONS
 
         /**
@@ -100,39 +107,29 @@ $(() => {
 
         /**
          * @param data {{
-         *     id,
-         *     body,
-         *     timestamp,
-         *     user,
-         *     mention,
-         *     files,
+         *     id: int,
+         *     body: string,
+         *     timestamp: string,
+         *     user_id: int,
+         *     replied_to: int | null,
+         *     mention: array | int | null,
+         *     files: [{
+         *          id: string,
+         *          name: string|null,
+         *      }] | null
          * }}
          */
-        this.addMessage = function (data) {
-            EL.messagesList.prepend(this.messageDiv(data.id, data.body, data.timestamp, data.user, data.mention, data.files)); // TODO объединить в 1 функцию
-        }
+        this.viewMessage = function (data) {
+            let id = data.id,
+                body = data.body,
+                timestamp = data.timestamp,
+                user_id = data.user_id,
+                replied_to = data.replied_to ?? null,
+                mention = data.mention ?? null,
+                files = data.files ?? null;
+            let div = $('<div class="chat-message d-flex">').attr('id', id);
 
-        /**
-         *
-         * @param id {int}
-         * @param body {string}
-         * @param timestamp {string}
-         * @param user {{
-         *         id: int,
-         *         displayName: string
-         *     }}
-         * @param mention {array}
-         * @param files {[{
-         *     id: string,
-         *     name: string|null,
-         * }]}
-         * TODO окончательно опеределиться с параметрами
-         */
-        this.messageDiv = function (id, body, timestamp, user, mention = [], files = []) {
-
-            let div = $('<div class="chat-message d-flex">').data('id', id);
-
-            if (user.id === 1) { // Значит это системное сообщение
+            if (user_id === 1) { // Значит это системное сообщение
                 div.addClass('system-message text-center').text(body);
             } else {
                 let leftColumn = $('<div>', {class: 'message-left-col'});
@@ -142,37 +139,52 @@ $(() => {
 
                 let rightColumn = $('<div class="message-right-col d-flex flex-column align-items-center justify-content-end">');
 
-                if (user.id === SESSION.userId) {
+                // Это сообщение мое или чьё-то
+                if (user_id === SESSION.userId) {
                     rightColumn
                         .removeClass('justify-content-end')
                         .addClass('justify-content-between')
                         .append('<div class="my-message d-flex justify-content-center align-items-center">Я</div>');
                 } else {
                     leftColumn.append('<img alt="user" src="/assets/files/users_default_avatars/User%20avatar.svg">'); //TODO получать src у пользователя или подумать ещё раз
-                    messageHead.text(user.displayName);
+                    messageHead.text(USERS[user_id].displayName);
                 }
 
-                if (mention.length) {
+                // Является ли сообщение ответом кому-то
+                if (mention) {
                     let mentionDiv = $('<span class="message-mention">');
-                    if (mention.length === 1) {
-                        mentionDiv.text(mention[0]);
+                    if (mention instanceof 'int') {
+                        mentionDiv.text(mention);
                     } else {
-                        div.data('mention', mention);
+                        div.attr('data-mention', mention);
                         mentionDiv.text('пользователям');
                     }
 
                     messageHead
-                        .append($('<div class="text-end w-100">ответил(а) </div>')
+                        .append($('<div class="text-end">ответил(а) </div>')
                             .append(mentionDiv)
+                        );
+                }
+
+                // Является ли ответом на сообщение
+                if (replied_to) {
+                    messageHead
+                        .append($('<div class="text-end">на </div>')
+                            .append(
+                                $('<a class="message-reply">сообщение</a>').attr('href', replied_to)
+                            )
                         );
                 }
 
                 centerColumn.append(messageHead)
 
-                for (let file of files) {
-                    centerColumn.append(`<div class="message-attached-file">file_${file.id}${" | " + file.name ?? ""}</div>`);
+                // Прикрепленные файлы
+                if (files) {
+                    for (let file of files) {
+                        centerColumn.append(`<div class="message-attached-file">file_${file.id}${" | " + file.name ?? ""}</div>`);
+                    }
                 }
-
+                // Текст сообщения
                 centerColumn
                     .append($('<div class="message-body formatted-message-text mt-1 px-1">')
                         .append($('<div>')
@@ -180,15 +192,17 @@ $(() => {
                         )
                     );
 
+                // Время отправки
                 rightColumn.append(`<div class="message-timestamp">${timestamp}</div>`);
 
 
                 div.append(leftColumn, centerColumn, rightColumn);
             }
 
+            // Контекстное меню
             div.contextmenu(this.contextMenu);
 
-            return div;
+            EL.messagesList.prepend(div);
         }
 
         this.contextMenu = function (e) {
@@ -223,53 +237,21 @@ $(() => {
 
         // END КОСТЫЛЬ
 
-        // REQUESTS
-        this.getRoom = function () {
-            chatAjax(`/getRoom` +
-                `?room_id=${SESSION.roomId}` +
-                `&user_id${SESSION.userId}`);
-        }
 
+        // REQUESTS
         this.getRoomMessages = function () {
-            chatAjax(`/getRoomMessages` +
-                `?room_id=${SESSION.roomId}` +
-                `&user_id=${SESSION.userId}`)
+            chatAjax(`/getRoomMessages/${SESSION.roomId}/${SESSION.userId}`,
+                {
+                    params: {
+                        limit: 20,
+                        page: 1,
+                    }
+                })
                 .done((response) => {
                     for (let message of response) {
-                        this.addMessage({
-                            id: message.id,
-                            body: message.body,
-                            timestamp: this.getTime(),
-                            user: {
-                                id: message.user.id,
-                                displayName: message.user.display_name
-                            },
-                        });
+                        this.viewMessage(message);
                     }
                 });
-        }
-
-        this.createUser = function () {
-            chatAjax(`/user/create`, {
-                display_name: 'TEST USER'
-            }, POST);
-        }
-
-        this.createRoom = function () {
-            chatAjax(`/room/create`, null, POST);
-        }
-
-        this.addUserToRoom = function () {
-            chatAjax(`/room/create`, {
-                room_id: 1,
-                user_id: 2
-            }, POST);
-        }
-
-        this.syncRoomUsers = function () {
-            chatAjax(`/room/create`, {
-                room_id: 1,
-            }, POST);
         }
 
         this.sendMessage = async function () {
@@ -280,24 +262,14 @@ $(() => {
                     room_id: SESSION.roomId,
                     body: messageBody
                 }, POST)
-                    .done((response) => {
-                        this.addMessage({
-                            id: response.id,
-                            body: response.body,
-                            timestamp: this.getTime(), //TODO заменить на данные из API
-                            user: {
-                                id: SESSION.userId,
-                                displayName: SESSION.displayName
-                            },
-                        });
+                    .done((message) => {
+                        this.viewMessage(message);
                         EL.messageTextArea.height(25);
                         EL.messageTextArea.val('');
-                    })
-                    .fail(() => {
-                        console.log('test')
                     });
             }
         }
+
         // END REQUESTS
 
         // END FUNCTIONS

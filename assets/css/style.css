@@ -144,7 +144,7 @@
     cursor: pointer;
 }
 
-.message-mention {
+.message-mention, .message-reply {
     color: var(--bs-blue);
 }
 
