@@ -2,7 +2,7 @@ $(() => {
     const API = 'http://chat.api.click2mice.local',
         POST = 'post',
         GET = 'get';
-    let users = null;
+
 
     function chatAjax(query, data = null, method = GET) {
         let options = {
@@ -23,6 +23,18 @@ $(() => {
     }
 
     let Chat = function () {
+
+        // ATTRIBUTES
+
+        this.users = null;
+        this.userId = null;
+        this.roomId = null;
+
+        this.dev = false;
+
+        // END ATTRIBUTES
+
+
         // FUNCTIONS
 
         /**
@@ -99,6 +111,12 @@ $(() => {
             EL.messageTextArea.height(EL.textAreaHeight.height());
         }
 
+        this.loadMessages = function (messages) {
+            messages.forEach((message) => {
+                this.messageView(message);
+            })
+        }
+
         /**
          * @param data {{
          *     id: int,
@@ -113,7 +131,7 @@ $(() => {
          *      }] | null
          * }}
          */
-        this.viewMessage = function (data) {
+        this.messageView = function (data) {
             let id = data.id,
                 body = data.body,
                 timestamp = data.timestamp,
@@ -241,11 +259,9 @@ $(() => {
                         page: 1,
                     }
                 })
-                .done((response) => {
-                    if (typeof response === 'object') {
-                        for (let message of response) {
-                            this.viewMessage(message);
-                        }
+                .done((messages) => {
+                    if (typeof messages === 'object') {
+                        sessionStorage.messages = JSON.stringify(messages);
                     } else {
                         this.throwException('Ошибка на стороне сервера');
                     }
@@ -261,7 +277,7 @@ $(() => {
                     body: messageBody
                 }, POST)
                     .done((message) => {
-                        this.viewMessage(message);
+                        this.messageView(message);
                         EL.messageTextArea.height(25);
                         EL.messageTextArea.val('');
                     });
@@ -301,7 +317,8 @@ $(() => {
             messageContextMenu: 'chat-message-contextmenu',
         });
 
-        const allowedOnLoadFunctions = [
+        const ON_LOAD = [
+            'dev',
             'toggleOpen',
             'setDraggable',
         ];
@@ -348,44 +365,61 @@ $(() => {
                 this.removeAttr('data-config');
                 if (config) {
                     if (config.css) this.css(config.css);
+                    if (config.attributes) {
+                        Object.entries(config.attributes).forEach(([attr, val]) => {
+                            if (ON_LOAD.includes(attr)) {
+                                this[attr] = val;
+                            }
+                        })
+                    }
                     if (config.onLoad) {
-                        config.onLoad.forEach((i) => {
-                            if (i.function && allowedOnLoadFunctions.includes(i.function)) {
-                                this[i.function](i.args ?? null)
+                        Object.entries(config.onLoad).forEach(([fu, args]) => {
+                            if (ON_LOAD.includes(fu)) {
+                                this[fu](...args ?? null)
                             }
                         })
                     }
                 }
 
-                if (sessionStorage.path !== location.pathname) {
-                    let sessionData = JSON.parse(this.attr('data-session')) ?? null;
-                    if (sessionData) {
-                        for (const key in sessionData) {
-                            sessionStorage.setItem(key, sessionData[key]); // TODO вероятно, не совсем безопасно хранить id пользователя и комнаты тут
-                        }
+                let sessionData = JSON.parse(this.attr('data-session')) ?? null;
+                if (sessionData) {
+                    if (sessionStorage.path !== location.pathname) {
+                        this.getRoomUsers(); // устанавливает sessionStorage.users
+                        this.getRoomMessages(); // устанавливает sessionStorage.messages
+                        sessionStorage.path = location.pathname;
                     }
-                    this.getRoomUsers(); // устанавливает sessionStorage.users
-                    sessionStorage.path = location.pathname;
+                    this.userId = sessionData.userId;
+                    this.roomId = sessionData.roomId;
+                    this.users = sessionStorage.users ? JSON.parse(sessionStorage.users) : null;
+                    if (sessionStorage.messages) {
+                        this.loadMessages(JSON.parse(sessionStorage.messages));
+                    }
+                } else {
+                    this.throwException('Отсутствуют данные о сессии');
                 }
-                this.removeAttr('data-session');
-                users = JSON.parse(sessionStorage.users);
 
+                this.removeAttr('data-session');
                 this.updateFieldHeight(); //Чтобы не стёртый ранее текст из поля ввода сообщения влиял на высоту блока ввода после обновления страницы
-                this.getRoomMessages();
             })
 
         EL.buttonSendMessage.click(this.sendMessage);
 
         EL.messageContextMenu.mouseleave(function () {
+
             $(this).hide('slideDown');
         });
+
 
     }
 
     Chat.prototype = $('#chat');
 
-    const chat = window.chat = new Chat();
+    const chat = new Chat();
     chat.trigger('load');
+
+    if (chat.dev) {
+        window.chat = chat;
+    }
 
     //DEV
 

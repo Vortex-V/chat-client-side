@@ -9,17 +9,13 @@ $config = $config ?? [
         'css' => [
             'position' => 'fixed',
         ],
+        'attributes' => [
+            'dev' => true
+        ],
         'onLoad' => [
-            [
-                'function' => 'setDraggable',
-            ],
-            [
-                'function' => 'toggleOpen',
-                'args' => false,
-            ],
-            [
-                'function' => 'test',
-            ],
+            'setDraggable' => [],
+            'toggleOpen' => [false],
+            'test' => ['test', 123],
         ]
     ];
 $session = $session ?? [
