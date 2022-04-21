@@ -30,6 +30,8 @@ $(() => {
         this.userId = null;
         this.roomId = null;
 
+        this.message = {};
+
         this.dev = false;
 
         // END ATTRIBUTES
@@ -38,24 +40,52 @@ $(() => {
         // FUNCTIONS
 
         /**
-         * Осуществляет поиск и сохранение JQuery объектов элементов окна
+         * Осуществляет поиск и сохранение JQuery объектов элементов окна чата
          * @param elements {{
          *              name:'DOM object id',
-         *          }}
+         *              name: [
+         *                  'DOM object id',
+         *                  {
+         *                      elements
+         *                  }
+         *              ]
+         *          } | null}
          *
-         * @returns {{}} Список полученных элементов
+         * @param path {object | null}
+         * @returns {object} Список полученных элементов
          */
-        this.elements = function (elements = null) {
+        this.elements = function (elements = null, path = null) {
+            if (!this.elements.list) this.elements.list = {};
             if (elements) {
-                this.elements.list = {};
-                for (let name in elements) {
-                    let id = elements[name];
-                    let child = $('#' + id);
-                    child.length ? this.elements.list[name] = child : this.throwException(`Не найден элемент по id = ${id}`);
+                for (let [name, val] of Object.entries(elements)) {
+                    if (typeof val === 'string') this.addElement(name, val, path);
+                    else {
+                        this.elements(
+                            val[1],
+                            this.addElement(name, val[0], path)
+                        );
+                    }
                 }
             }
             return this.elements.list
         };
+
+        /**
+         *
+         * @param name
+         * @param id
+         * @param path
+         * @returns {jQuery}
+         */
+        this.addElement = function (name, id, path = null) {
+            let element = $('#chat-' + id);
+            let list = path ?? this.elements.list;
+            if (element.length) {
+                return list[name] = element;
+            } else {
+                this.throwException(`Не найден элемент по id = chat-${id}`);
+            }
+        }
 
         this.throwException = function (message) {
             throw message;
@@ -77,11 +107,11 @@ $(() => {
                 stack: this,
                 disabled: true,
                 start: function () {
-                    allowClickOnTopPanel = false;
+                    topPanel.allowClick = false;
                 },
                 stop: function () {
                     setTimeout(() => { // Не даёт произойти автоматическому закрытию окна сразу после перетаскивания
-                        allowClickOnTopPanel = true;
+                        topPanel.allowClick = true;
                     }, 1);
                 }
             });
@@ -139,11 +169,18 @@ $(() => {
                 replied_to = data.replied_to ?? null,
                 mention = data.mention ?? null,
                 files = data.files ?? null;
-            let div = $('<div class="chat-message d-flex">').attr('id', id);
+            let div = $('<div class="chat-message">').data({
+                id: id,
+                user_id: user_id
+            });
 
             if (user_id === 1) { // Значит это системное сообщение
-                div.addClass('system-message text-center').text(body);
+                div.addClass('system-message text-center').append(`<div class="formatted-message-text">${body}</div>`);
             } else {
+                div
+                    .attr('id', 'message_' + id)
+                    .addClass('d-flex');
+
                 let leftColumn = $('<div>', {class: 'message-left-col'});
 
                 let centerColumn = $('<div class="message-center-col d-flex flex-column flex-fill mx-1">');
@@ -152,30 +189,29 @@ $(() => {
                 let rightColumn = $('<div class="message-right-col d-flex flex-column align-items-center justify-content-end">');
 
                 // Это сообщение мое или чьё-то
-                if (user_id === sessionStorage.userId) {
+                if (user_id === this.userId) {
                     rightColumn
                         .removeClass('justify-content-end')
                         .addClass('justify-content-between')
                         .append('<div class="my-message d-flex justify-content-center align-items-center">Я</div>');
                 } else {
                     leftColumn.append('<img alt="user" src="/assets/files/users_default_avatars/User%20avatar.svg">'); //TODO получать src у пользователя или подумать ещё раз
-                    messageHead.text(sessionStorage.users[user_id].displayName);
+                    messageHead.text(this.users[user_id].displayName);
                 }
 
                 // Является ли сообщение ответом кому-то
                 if (mention) {
-                    let mentionDiv = $('<span class="message-mention">');
+                    let mentionDiv = $();
                     if (mention instanceof 'int') {
-                        mentionDiv.text(mention);
+                        mentionDiv = mentionDiv.add(`<a class="message-link">${mention}</a>`);
                     } else {
-                        div.attr('data-mention', mention);
-                        mentionDiv.text('пользователям');
+                        div.data('mention', mention);
+                        mentionDiv = mentionDiv
+                            .add(`<span class="message-mention">пользователям</span>`)
+                        //TODO .click();
                     }
 
-                    messageHead
-                        .append($('<div class="text-end">ответил(а) </div>')
-                            .append(mentionDiv)
-                        );
+                    messageHead.append($(`<div class="text-end">ответил(а) ${mentionDiv[0]}</div>`));
                 }
 
                 // Является ли ответом на сообщение
@@ -183,7 +219,7 @@ $(() => {
                     messageHead
                         .append($('<div class="text-end">на </div>')
                             .append(
-                                $('<a class="message-reply">сообщение</a>').attr('href', replied_to)
+                                $('<a class="message-link">сообщение</a>').attr('href', '#message_' + replied_to)
                             )
                         );
                 }
@@ -209,15 +245,15 @@ $(() => {
 
 
                 div.append(leftColumn, centerColumn, rightColumn);
-            }
 
-            // Контекстное меню
-            div.contextmenu(this.contextMenu);
+                // Контекстное меню
+                div.contextmenu(this.showContextMenu);
+            }
 
             EL.messagesList.prepend(div);
         }
 
-        this.contextMenu = function (e) {
+        this.showContextMenu = function (e) {
             e.preventDefault();
             let x = e.originalEvent.layerX,
                 y = e.originalEvent.layerY,
@@ -226,15 +262,38 @@ $(() => {
             while (messagesList.width() - x < 250) {
                 x -= 30;
             }
-            /*while (messagesList.height() - y < messageContextMenu.height()) {
-                y -= 10;
-            }*/
-            messageContextMenu.css({
-                left: x,
-                top: y,
-            }).show('fadeIn');
+            let message = $(e.currentTarget);
+            messageContextMenu
+                .css({
+                    left: x,
+                    top: y,
+                })
+                .data(message.data())
+                .show('fadeIn');
         }
 
+
+        this.addReply = function (id) {
+            this.message.replied_to = id;
+            let reply = EL.messageAdditional.reply;
+            reply.empty()
+                .hide()
+                .text('В ответ на ')
+                .append(
+                    $('<a class="message-link">сообщение</a>').attr('href', '#message_' + id)
+                )
+                .slideDown(200);
+        }
+
+        this.addMention = function (e, user_id) { // TODO
+            if (!this.message.mention) this.message.mention = [];
+            this.message.mention.push(user_id);
+            let mention = EL.messageAdditional.mention;
+            mention.text('пользователю ')
+                .append(
+                    $('<span class="message-mention"></span>').text(this.users[user_id].displayName)
+                );
+        }
 
         // КОСТЫЛЬ
 
@@ -252,8 +311,10 @@ $(() => {
 
         // REQUESTS
         this.getRoomMessages = function () {
-            chatAjax(`/getRoomMessages/${sessionStorage.roomId}/${sessionStorage.userId}`,
+            chatAjax('/roomMessages',
                 {
+                    user_id: this.userId,
+                    room_id: this.roomId,
                     params: {
                         limit: 20,
                         page: 1,
@@ -269,25 +330,33 @@ $(() => {
         }
 
         this.sendMessage = function () {
-            let messageBody = EL.messageTextArea.val();
-            if (messageBody) {
-                chatAjax('/sendMessage', {
-                    user_id: sessionStorage.userId,
-                    room_id: sessionStorage.roomId,
-                    body: messageBody
-                }, POST)
+            let body = EL.messageTextArea.val();
+            if (body) {
+
+                chatAjax('/sendMessage',
+                    Object.assign(this.message, {
+                        user_id: this.userId,
+                        room_id: this.roomId,
+                        body: body
+                    }),
+                    POST)
                     .done((message) => {
                         this.messageView(message);
                         EL.messageTextArea.height(25);
                         EL.messageTextArea.val('');
+                        EL.textAreaHeight.children().empty();
+                        this.message = {};
                     });
             }
         }
 
         this.getRoomUsers = function () {
-            chatAjax(`/getRoomUsers/${sessionStorage.roomId}`)
+            chatAjax('/roomUsers', {
+                room_id: this.roomId,
+            })
                 /** @param users {{
                  *      id: {
+                 *          id: int,
                  *          displayName: string,
                  *      }
                  *  }}
@@ -309,12 +378,25 @@ $(() => {
         // ELEMENTS & CONSTANTS
 
         const EL = this.elements({
-            topPanel: 'chat-top-panel',
-            messageTextArea: 'chat-message-textarea',
-            textAreaHeight: 'chat-textarea-height',
-            messagesList: 'chat-messages-list',
-            buttonSendMessage: 'chat-send-message',
-            messageContextMenu: 'chat-message-contextmenu',
+            topPanel: 'top-panel',
+            messageTextArea: 'message-textarea',
+            textAreaHeight: 'textarea-height',
+            messagesList: 'messages-list',
+            buttonSendMessage: 'send-message',
+            messageContextMenu: [
+                'message-contextmenu',
+                {
+                    reply: 'message-reply',
+                },
+            ],
+            messageAdditional: [
+                'message-additional',
+                {
+                    file: 'message-additional-file',
+                    reply: 'message-additional-reply',
+                    mention: 'message-additional-mention',
+                }
+            ]
         });
 
         const ON_LOAD = [
@@ -323,7 +405,11 @@ $(() => {
             'setDraggable',
         ];
 
+        EL.topPanel.allowClick = true;
+        EL.messageAdditional.opened = false;
+
         // END ELEMENTS & CONSTANTS
+
 
         // EVENTS
 
@@ -336,6 +422,16 @@ $(() => {
             }
         });
 
+        this
+            .on('chatOpen', () => {
+                    EL.messageTextArea.focus();
+                    this.draggable('enable');
+                },
+            )
+            .on('chatClose', () => {
+                this.draggable('disable');
+            });
+
         EL.messageTextArea
             .on('input', () => this.updateFieldHeight())
             .keydown((e) => {  /* Отправляет сообщение на Ctrl+Enter TODO: сделать комбинацию клавиш настриваемой */
@@ -344,82 +440,87 @@ $(() => {
                 }
             });
 
-        let allowClickOnTopPanel = EL.topPanel.click.allow = true;
-        EL.topPanel.click(() => {
-            if (allowClickOnTopPanel) {
+        let topPanel = EL.topPanel;
+        topPanel.click(() => {
+            if (topPanel.allowClick) {
                 this.toggleOpen();
             }
         });
 
-        this.on('chatOpen',
-            () => {
-                EL.messageTextArea.focus();
-                this.draggable('enable');
-            },
-        )
-            .on('chatClose', () => {
-                this.draggable('disable');
+        EL.buttonSendMessage.click(() => this.sendMessage());
+
+        let messageContextMenu = EL.messageContextMenu;
+        messageContextMenu
+            .mouseleave(() => {
+                messageContextMenu.hide('slideDown');
             })
-            .on('load', () => {
-                let config = JSON.parse(this.attr('data-config')) ?? null;
-                this.removeAttr('data-config');
-                if (config) {
-                    if (config.css) this.css(config.css);
-                    if (config.attributes) {
-                        Object.entries(config.attributes).forEach(([attr, val]) => {
-                            if (ON_LOAD.includes(attr)) {
-                                this[attr] = val;
-                            }
-                        })
-                    }
-                    if (config.onLoad) {
-                        Object.entries(config.onLoad).forEach(([fu, args]) => {
-                            if (ON_LOAD.includes(fu)) {
-                                this[fu](...args ?? null)
-                            }
-                        })
-                    }
-                }
+            .reply.click(() => this.addReply(messageContextMenu.data('id')));
 
-                let sessionData = JSON.parse(this.attr('data-session')) ?? null;
-                if (sessionData) {
-                    if (sessionStorage.path !== location.pathname) {
-                        this.getRoomUsers(); // устанавливает sessionStorage.users
-                        this.getRoomMessages(); // устанавливает sessionStorage.messages
-                        sessionStorage.path = location.pathname;
-                    }
-                    this.userId = sessionData.userId;
-                    this.roomId = sessionData.roomId;
-                    this.users = sessionStorage.users ? JSON.parse(sessionStorage.users) : null;
-                    if (sessionStorage.messages) {
-                        this.loadMessages(JSON.parse(sessionStorage.messages));
-                    }
-                } else {
-                    this.throwException('Отсутствуют данные о сессии');
-                }
-
-                this.removeAttr('data-session');
-                this.updateFieldHeight(); //Чтобы не стёртый ранее текст из поля ввода сообщения влиял на высоту блока ввода после обновления страницы
+        let messageAdditional = EL.messageAdditional;
+        messageAdditional
+            .on('hasAdditions', () => { // TODO возможно бессмысленно
+                messageAdditional
+                    .slideDown()
+                    .opened = true;
             })
-
-        EL.buttonSendMessage.click(this.sendMessage);
-
-        EL.messageContextMenu.mouseleave(function () {
-
-            $(this).hide('slideDown');
-        });
+            .on('noAdditions', () => { // TODO возможно бессмысленно
+                messageAdditional
+                    .slideUp()
+                    .opened = false;
+            });
 
 
+        // LOAD
+
+        let config = JSON.parse(this.attr('data-config')) ?? null;
+        this.removeAttr('data-config');
+        if (config) {
+            if (config.css) this.css(config.css);
+            if (config.attributes) {
+                Object.entries(config.attributes).forEach(([attr, val]) => {
+                    if (ON_LOAD.includes(attr)) {
+                        this[attr] = val;
+                    }
+                })
+            }
+            if (config.onLoad) {
+                Object.entries(config.onLoad).forEach(([fu, args]) => {
+                    if (ON_LOAD.includes(fu)) {
+                        this[fu](...args ?? null)
+                    }
+                })
+            }
+        }
+
+        let sessionData = JSON.parse(this.attr('data-session')) ?? null;
+        if (sessionData) {
+            this.userId = sessionData.userId;
+            this.roomId = sessionData.roomId;
+            if (sessionStorage.path !== location.pathname) {
+                this.getRoomUsers(); // устанавливает sessionStorage.users
+                this.getRoomMessages(); // устанавливает sessionStorage.messages
+                sessionStorage.path = location.pathname;
+            }
+            this.users = sessionStorage.users ? JSON.parse(sessionStorage.users) : null;
+            if (sessionStorage.messages) {
+                this.loadMessages(JSON.parse(sessionStorage.messages)); // TODO привязать к событию
+            }
+        } else {
+            this.throwException('Отсутствуют данные о сессии');
+        }
+
+        this.removeAttr('data-session');
+        this.updateFieldHeight(); //Чтобы не стёртый ранее текст из поля ввода сообщения влиял на высоту блока ввода после обновления страницы
+
+        if (this.dev) {
+            window.chat = this;
+        }
     }
 
     Chat.prototype = $('#chat');
 
     const chat = new Chat();
-    chat.trigger('load');
 
-    if (chat.dev) {
-        window.chat = chat;
-    }
 
     //DEV
 
@@ -427,10 +528,9 @@ $(() => {
      * @param fn
      */
     function time(fn) {
-        const name = fn.name === '' ? 'function' : fn.name;
-        console.time(name);
+        console.time('function');
         let res = fn();
-        console.timeEnd(name);
+        console.timeEnd('function');
         return res;
     }
 });
