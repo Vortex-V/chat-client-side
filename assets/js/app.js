@@ -247,7 +247,7 @@ $(() => {
                 div.append(leftColumn, centerColumn, rightColumn);
 
                 // Контекстное меню
-                div.contextmenu(this.showContextMenu);
+                div.contextmenu((e) => this.showContextMenu(e));
             }
 
             EL.messagesList.prepend(div);
@@ -255,20 +255,32 @@ $(() => {
 
         this.showContextMenu = function (e) {
             e.preventDefault();
-            let x = e.originalEvent.layerX,
-                y = e.originalEvent.layerY,
-                messagesList = EL.messagesList,
-                messageContextMenu = EL.messageContextMenu;
-            while (messagesList.width() - x < 250) {
-                x -= 30;
-            }
-            let message = $(e.currentTarget);
+            let messageContextMenu = EL.messageContextMenu,
+                menuEdges = {
+                    left: e.originalEvent.pageX,
+                    top: e.originalEvent.pageY,
+                },
+                chatEdges = this.offset();
+            menuEdges = Object.assign(menuEdges, {
+                right: menuEdges.left + messageContextMenu.width(),
+                bottom: menuEdges.top + messageContextMenu.height(),
+            })
+            chatEdges = Object.assign(chatEdges, {
+                right: chatEdges.left + this.width(),
+                bottom: chatEdges.top + this.height()
+            });
+
+            // Чтобы не выходил за края
+            if (menuEdges.left < chatEdges.left) menuEdges.left += chatEdges.left - menuEdges.left;
+            if (menuEdges.right > chatEdges.right) menuEdges.left -= menuEdges.right - chatEdges.right;
+            if (menuEdges.bottom > chatEdges.bottom) menuEdges.top -= menuEdges.bottom - chatEdges.bottom;
+
             messageContextMenu
                 .css({
-                    left: x,
-                    top: y,
+                    left: menuEdges.left,
+                    top: menuEdges.top,
                 })
-                .data(message.data())
+                .data($(e.currentTarget).data())
                 .show('fadeIn');
         }
 
