@@ -141,10 +141,10 @@ $(() => {
             EL.messageTextArea.height(EL.textAreaHeight.height());
         }
 
-        this.loadMessages = function (messages) {
-            messages.forEach((message) => {
+        this.showMessages = function (messages) {
+            for (const message of messages) {
                 this.messageView(message);
-            })
+            }
         }
 
         /**
@@ -310,6 +310,29 @@ $(() => {
 
 
         // REQUESTS
+
+        this.getRoomUsers = function () {
+            chatAjax('/roomUsers', {
+                room_id: this.roomId,
+            })
+                /** @param users {{
+                 *      id: {
+                 *          id: int,
+                 *          displayName: string,
+                 *      }
+                 *  }}
+                 * */
+                .done((users) => {
+                    if (typeof users === 'object') {
+                        sessionStorage.chatUsers = JSON.stringify(users);
+                        this.users = users;
+                        this.trigger('chatLoadMessages');
+                    } else {
+                        this.throwException('Ошибка на стороне сервера');
+                    }
+                });
+        }
+
         this.getRoomMessages = function () {
             chatAjax('/roomMessages',
                 {
@@ -322,7 +345,8 @@ $(() => {
                 })
                 .done((messages) => {
                     if (typeof messages === 'object') {
-                        sessionStorage.messages = JSON.stringify(messages);
+                        sessionStorage.chatMessages = JSON.stringify(messages);
+                        this.showMessages(messages);
                     } else {
                         this.throwException('Ошибка на стороне сервера');
                     }
@@ -355,28 +379,9 @@ $(() => {
                         EL.messageAdditional.reply
                             .empty()
                             .hide();
+                        sessionStorage.removeItem('chatMessages');
                     });
             }
-        }
-
-        this.getRoomUsers = function () {
-            chatAjax('/roomUsers', {
-                room_id: this.roomId,
-            })
-                /** @param users {{
-                 *      id: {
-                 *          id: int,
-                 *          displayName: string,
-                 *      }
-                 *  }}
-                 * */
-                .done((users) => {
-                    if (typeof users === 'object') {
-                        sessionStorage.setItem('users', JSON.stringify(users));
-                    } else {
-                        this.throwException('Ошибка на стороне сервера');
-                    }
-                });
         }
 
         // END REQUESTS
@@ -432,6 +437,33 @@ $(() => {
         });
 
         this
+            .on('chatLoadFromSessionStorage', () => {
+                if (sessionStorage.pathname !== location.pathname) { // TODO Вероятно (и возможно что довольно таки) глупое решение. Подумать.
+                    this.trigger('chatNeedsUpdate');
+                }
+                if (sessionStorage.chatUsers) {
+                    this.users = JSON.parse(sessionStorage.chatUsers);
+                    this.trigger('chatLoadMessages');
+                } else {
+                    this.getRoomUsers(); // устанавливает sessionStorage.users и this.users
+                }
+            })
+            .on('chatNeedsUpdate', () => {
+                sessionStorage.pathname = location.pathname;
+                sessionStorage.removeItem('chatUsers');
+                sessionStorage.removeItem('chatMessages');
+            })
+            .on('chatLoadMessages', () => {
+                if (sessionStorage.chatMessages) {
+                    if (this.users) {
+                        this.showMessages(JSON.parse(sessionStorage.chatMessages));
+                    } else {
+                        this.throwException('Chat: отсутствуют пользователи');
+                    }
+                } else {
+                    this.getRoomMessages(); // устанавливает sessionStorage.messages
+                }
+            })
             .on('chatOpen', () => {
                     EL.messageTextArea.focus();
                     this.draggable('enable');
@@ -505,15 +537,7 @@ $(() => {
         if (sessionData) {
             this.userId = sessionData.userId;
             this.roomId = sessionData.roomId;
-            if (sessionStorage.path !== location.pathname) {
-                this.getRoomUsers(); // устанавливает sessionStorage.users
-                this.getRoomMessages(); // устанавливает sessionStorage.messages
-                sessionStorage.path = location.pathname;
-            }
-            this.users = sessionStorage.users ? JSON.parse(sessionStorage.users) : null;
-            if (sessionStorage.messages) {
-                this.loadMessages(JSON.parse(sessionStorage.messages)); // TODO привязать к событию
-            }
+            this.trigger('chatLoadFromSessionStorage');
         } else {
             this.throwException('Отсутствуют данные о сессии');
         }
