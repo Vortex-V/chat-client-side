@@ -275,8 +275,8 @@ $(() => {
 
         this.addReply = function (id) {
             this.message.replied_to = id;
-            let reply = EL.messageAdditional.reply;
-            reply.empty()
+            EL.messageAdditional.reply
+                .empty()
                 .hide()
                 .text('В ответ на ')
                 .append(
@@ -332,9 +332,14 @@ $(() => {
         this.sendMessage = function () {
             let body = EL.messageTextArea.val();
             if (body) {
-
+                let message = this.message;
+                if (message.replied_to) {
+                    let repliedMessageUserId = $('#message_' + message.replied_to).data('user_id');
+                    if (!message.mention) message.mention = [];
+                    message.mention.push(repliedMessageUserId);
+                }
                 chatAjax('/sendMessage',
-                    Object.assign(this.message, {
+                    Object.assign(message, {
                         user_id: this.userId,
                         room_id: this.roomId,
                         body: body
@@ -342,10 +347,14 @@ $(() => {
                     POST)
                     .done((message) => {
                         this.messageView(message);
-                        EL.messageTextArea.height(25);
                         EL.messageTextArea.val('');
-                        EL.textAreaHeight.children().empty();
+                        EL.messageTextArea.height(EL.textAreaHeight.children()
+                            .empty()
+                            .height());
                         this.message = {};
+                        EL.messageAdditional.reply
+                            .empty()
+                            .hide();
                     });
             }
         }
