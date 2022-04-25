@@ -7,7 +7,7 @@ use yii\web\JqueryAsset;
 
 class ChatAssets extends \yii\web\AssetBundle
 {
-    public $sourcePath = __DIR__ . '/assets/';
+    public $sourcePath = __DIR__ . '/';
     public $css = [
         'css/style.css'
     ];
