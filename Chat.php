@@ -2,7 +2,7 @@
 
 namespace vortex_v\chat_client_side;
 
-use app\modules\chat\ChatAssets;
+use vortex_v\chat_client_side\assets\ChatAssets;
 use yii\base\Widget;
 
 class Chat extends Widget

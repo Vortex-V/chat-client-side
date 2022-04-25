@@ -1,6 +1,7 @@
 <?php
 
-namespace app\modules\chat;
+namespace vortex_v\chat_client_side\assets;
+
 
 use yii\bootstrap4\BootstrapAsset;
 use yii\web\JqueryAsset;

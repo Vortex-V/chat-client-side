@@ -1,6 +1,6 @@
 <?php
 
-namespace app\modules\chat;
+namespace vortex_v\chat_client_side\assets;
 
 class JqueryUIAsset extends \yii\web\AssetBundle
 {
