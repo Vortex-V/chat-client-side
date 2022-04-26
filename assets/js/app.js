@@ -91,30 +91,32 @@ $(() => {
             throw message;
         };
 
-        this.toggleOpen = function (triggerEvents = true) {
+        this.toggleOpen = function () {
             if (this.hasClass('closed')) {
                 this.removeClass('closed');
-                if (triggerEvents) this.trigger('chatOpen');
+                this.trigger('chatOpen');
             } else {
                 this.addClass('closed');
-                if (triggerEvents) this.trigger('chatClose');
+                this.trigger('chatClose');
             }
         }
 
         this.setDraggable = function () {
-            this.draggable({
-                handle: EL.topPanel,
-                stack: this,
-                disabled: true,
-                start: function () {
-                    topPanel.allowClick = false;
-                },
-                stop: function () {
-                    setTimeout(() => { // Не даёт произойти автоматическому закрытию окна сразу после перетаскивания
-                        topPanel.allowClick = true;
-                    }, 1);
-                }
-            });
+            this.css('position', 'fixed')
+                .draggable({
+                    handle: EL.topPanel,
+                    stack: this,
+                    disabled: true,
+                    start: function () {
+                        topPanel.allowClick = false;
+                    },
+                    stop: function () {
+                        setTimeout(() => { // Не даёт произойти самостоятельному закрытию окна сразу после перетаскивания
+                            topPanel.allowClick = true;
+                        }, 1);
+                    }
+                })
+                .toggleOpen();
         }
 
         /**
@@ -425,7 +427,7 @@ $(() => {
             ]
         });
 
-        const ON_LOAD = [
+        const ON_LOAD = [  // TODO вероятно не пригодится
             'dev',
             'toggleOpen',
             'setDraggable',
@@ -477,11 +479,20 @@ $(() => {
                 }
             })
             .on('chatOpen', () => {
-                    EL.messageTextArea.focus();
-                    this.draggable('enable');
+                EL.messagesList
+                    .show()
+                    .addClass('d-flex');
+                EL.messageTextArea[0].disabled = false;
+                EL.messageTextArea.focus();
+                this.draggable('enable');
                 },
             )
             .on('chatClose', () => {
+                EL.messagesList
+                    .removeClass('d-flex')
+                    .hide();
+                EL.messageTextArea.blur();
+                EL.messageTextArea[0].disabled = true;
                 this.draggable('disable');
             });
 
@@ -529,6 +540,12 @@ $(() => {
         this.removeAttr('data-config');
         if (config) {
             if (config.css) this.css(config.css);
+
+            if (config.draggable) {
+                this.setDraggable();
+            }
+
+            // TODO вероятно не пригодится
             if (config.attributes) {
                 Object.entries(config.attributes).forEach(([attr, val]) => {
                     if (ON_LOAD.includes(attr)) {
@@ -543,6 +560,10 @@ $(() => {
                     }
                 })
             }
+
+            if (config.dev) {
+                window.chat = this;
+            }
         }
 
         let sessionData = JSON.parse(this.attr('data-session')) ?? null;
@@ -556,10 +577,6 @@ $(() => {
 
         this.removeAttr('data-session');
         this.updateFieldHeight(); //Чтобы не стёртый ранее текст из поля ввода сообщения влиял на высоту блока ввода после обновления страницы
-
-        if (this.dev) {
-            window.chat = this;
-        }
     }
 
     Chat.prototype = $('#chat');

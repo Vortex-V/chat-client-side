@@ -14,7 +14,6 @@
     transition-duration: 0.5s;
 
     background: var(--chat-bg);
-    overflow: hidden;
     z-index: 1000;
 }
 
@@ -118,7 +117,7 @@
 
 .message-head,
 .message-right-col {
-    color: var(--bs-gray);
+    color: var(--gray);
 }
 
 .message-body {
@@ -148,7 +147,7 @@
 }
 
 .message-mention, .message-reply, .message-link {
-    color: var(--bs-blue);
+    color: var(--blue);
     text-decoration: none;
 }
 
@@ -157,7 +156,7 @@
 }
 
 .system-message {
-    color: var(--bs-gray);
+    color: var(--gray);
     word-break: break-word;
 }
 
@@ -180,13 +179,6 @@
 #chat-message-contextmenu > *:hover {
     background-color: var(--chat-hover);
     cursor: default;
-}
-
-
-#chat .menu-show {
-    transform-origin: top left;
-    transition-duration: .5s;
-    /*  animation: menu-show 1s ease-in-out forwards;*/
 }
 
 .chat-svg {

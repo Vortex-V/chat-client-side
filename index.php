@@ -18,7 +18,21 @@ require_once __DIR__ . '/vendor/' . 'autoload.php';
 
 <body>
 <?php
-require 'views/index.php';
+try {
+    echo \vortex_v\chat_widget\Chat::widget([
+        'css' => [
+            'position' => 'fixed',
+        ],
+        'dev' => true,
+        'draggable' => true,
+        'session' => [
+            'userId' => 2,
+            'roomId' => 1,
+        ]
+    ]);
+} catch (Throwable $e) {
+    var_dump($e);
+}
 ?>
 <script src="/vendor/bower-asset/jquery/dist/jquery.min.js"></script>
 <script src="/vendor/bower-asset/jquery-ui/jquery-ui.min.js"></script>

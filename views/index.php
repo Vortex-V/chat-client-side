@@ -3,27 +3,8 @@
  * @var array $config
  * @var array $session
  */
-
-// TODO временно, должно передаваться в widget
-$config = $config ?? [
-        'css' => [
-            'position' => 'fixed',
-        ],
-        'attributes' => [
-            'dev' => true
-        ],
-        'onLoad' => [
-            'setDraggable' => [],
-            'toggleOpen' => [false],
-            'test' => ['test', 123],
-        ]
-    ];
-$session = $session ?? [
-        'userId' => 2,
-        'roomId' => 1,
-    ]
 ?>
-<div id="chat" class="main d-flex flex-column"
+<div id="chat" class="d-flex flex-column"
      data-config='<?= json_encode($config) ?>'
      data-session='<?= json_encode($session) ?>'>
     <div id="chat-top-panel" class="d-flex justify-content-center align-content-center">
