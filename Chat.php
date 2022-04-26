@@ -2,7 +2,7 @@
 
 class Chat
 {
-    public function getPath(): string
+    public static function getPath(): string
     {
         return __DIR__;
     }
