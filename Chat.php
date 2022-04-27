@@ -4,6 +4,8 @@ namespace vortex_v\chat_widget;
 
 class Chat
 {
+    use ChatConfig;
+
     public function __construct($config = null)
     {
         if (isset($config)) {
@@ -26,6 +28,7 @@ class Chat
     }
 
     /**
+     * @deprecated
      * @return array
      */
     public function toArray(): array
@@ -35,7 +38,6 @@ class Chat
         unset($config['session']);
         return compact('config', 'session');
     }
-
 
     public static function widget($config = null)
     {
