@@ -197,7 +197,7 @@ $(() => {
                         .addClass('justify-content-between')
                         .append('<div class="my-message d-flex justify-content-center align-items-center">Я</div>');
                 } else {
-                    leftColumn.append('<img alt="user" src="/assets/files/users_default_avatars/User%20avatar.svg">'); //TODO получать src у пользователя или подумать ещё раз
+                    leftColumn.append('<img alt="user" src="../files/users_default_avatars/User%20avatar.svg">'); //TODO получать src у пользователя или подумать ещё раз
                     messageHead.text(this.users[user_id].displayName);
                 }
 
