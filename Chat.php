@@ -28,7 +28,6 @@ class Chat
     }
 
     /**
-     * @deprecated
      * @return array
      */
     public function toArray(): array

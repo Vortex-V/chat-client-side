@@ -191,13 +191,13 @@ $(() => {
                 let rightColumn = $('<div class="message-right-col d-flex flex-column align-items-center justify-content-end">');
 
                 // Это сообщение мое или чьё-то
-                if (user_id === this.userId) {
+                if (user_id === parseInt(this.userId)) {
                     rightColumn
                         .removeClass('justify-content-end')
                         .addClass('justify-content-between')
                         .append('<div class="my-message d-flex justify-content-center align-items-center">Я</div>');
                 } else {
-                    leftColumn.append('<img alt="user" src="../files/users_default_avatars/User%20avatar.svg">'); //TODO получать src у пользователя или подумать ещё раз
+                    leftColumn.append('<img alt="user" src="/assets/files/users_default_avatars/User%20avatar.svg">'); //TODO получать src у пользователя или подумать ещё раз
                     messageHead.text(this.users[user_id].displayName);
                 }
 
