@@ -49,7 +49,7 @@ trait ChatConfig
             'session' => $this->session,
         ];
         foreach (self::varsForConfig() as $var){
-            if ($this->$var){
+            if (isset($this->$var)){
                 $params['config'][$var] = $this->$var;
             }
         }
