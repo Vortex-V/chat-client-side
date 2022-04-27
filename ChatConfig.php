@@ -13,6 +13,8 @@ trait ChatConfig
      */
     public array $session;
 
+    public string $apiUrl;
+
     /**
      * Например
      * [
@@ -24,15 +26,33 @@ trait ChatConfig
 
     public bool $draggable;
 
+    /**
+     * При выполнении JS запишет объект чата в window
+     * @var bool
+     */
     public bool $dev;
 
-    public array $config;
-
-    public function setConfig()
+    public static function varsForConfig(): array
     {
-        $config = get_object_vars($this);
-        $session = $config['session'];
-        unset($config['session']);
-        $this->config = compact('config', 'session');
+        return [
+            'dev',
+            'apiUrl',
+            'css',
+            'draggable',
+        ];
+    }
+
+    public function getParams(): array
+    {
+        $params = [
+            'config' => [],
+            'session' => $this->session,
+        ];
+        foreach (self::varsForConfig() as $var){
+            if ($this->$var){
+                $params['config'][$var] = $this->$var;
+            }
+        }
+        return $params;
     }
 }

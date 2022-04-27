@@ -1,6 +1,6 @@
 $(() => {
-    const API = 'http://chat.api.click2mice.local',
-        POST = 'post',
+    let API = null;
+    const POST = 'post',
         GET = 'get';
 
 
@@ -31,8 +31,6 @@ $(() => {
         this.roomId = null;
 
         this.message = {};
-
-        this.dev = false;
 
         // END ATTRIBUTES
 
@@ -427,12 +425,6 @@ $(() => {
             ]
         });
 
-        const ON_LOAD = [  // TODO вероятно не пригодится
-            'dev',
-            'toggleOpen',
-            'setDraggable',
-        ];
-
         EL.topPanel.allowClick = true;
         EL.messageAdditional.opened = false;
 
@@ -479,12 +471,12 @@ $(() => {
                 }
             })
             .on('chatOpen', () => {
-                EL.messagesList
-                    .show()
-                    .addClass('d-flex');
-                EL.messageTextArea[0].disabled = false;
-                EL.messageTextArea.focus();
-                this.draggable('enable');
+                    EL.messagesList
+                        .show()
+                        .addClass('d-flex');
+                    EL.messageTextArea[0].disabled = false;
+                    EL.messageTextArea.focus();
+                    this.draggable('enable');
                 },
             )
             .on('chatClose', () => {
@@ -538,27 +530,20 @@ $(() => {
 
         let config = JSON.parse(this.attr('data-config')) ?? null;
         this.removeAttr('data-config');
+        let sessionData = JSON.parse(this.attr('data-session')) ?? null;
+        this.removeAttr('data-session');
+
         if (config) {
+            if (config.apiUrl) {
+                API = config.apiUrl;
+            } else {
+                this.throwException('Отсутствует API URL');
+            }
+
             if (config.css) this.css(config.css);
 
             if (config.draggable) {
                 this.setDraggable();
-            }
-
-            // TODO вероятно не пригодится
-            if (config.attributes) {
-                Object.entries(config.attributes).forEach(([attr, val]) => {
-                    if (ON_LOAD.includes(attr)) {
-                        this[attr] = val;
-                    }
-                })
-            }
-            if (config.onLoad) {
-                Object.entries(config.onLoad).forEach(([fu, args]) => {
-                    if (ON_LOAD.includes(fu)) {
-                        this[fu](...args ?? null)
-                    }
-                })
             }
 
             if (config.dev) {
@@ -566,7 +551,6 @@ $(() => {
             }
         }
 
-        let sessionData = JSON.parse(this.attr('data-session')) ?? null;
         if (sessionData) {
             this.userId = sessionData.userId;
             this.roomId = sessionData.roomId;
@@ -575,13 +559,12 @@ $(() => {
             this.throwException('Отсутствуют данные о сессии');
         }
 
-        this.removeAttr('data-session');
         this.updateFieldHeight(); //Чтобы не стёртый ранее текст из поля ввода сообщения влиял на высоту блока ввода после обновления страницы
     }
 
     Chat.prototype = $('#chat');
 
-    const chat = new Chat();
+    new Chat();
 
 
     //DEV

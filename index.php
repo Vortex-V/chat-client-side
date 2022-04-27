@@ -20,6 +20,7 @@ require_once __DIR__ . '/vendor/' . 'autoload.php';
 <?php
 try {
     echo \vortex_v\chat_widget\Chat::widget([
+        'apiUrl' => 'http://chat.api.click2mice.local',
         'css' => [
             'position' => 'fixed',
         ],
