@@ -4,7 +4,8 @@
  * @var array $session
  */
 ?>
-<div id="chat" class="flex-column <?php if ($config['draggable'] || $config['foldable']) echo 'closed'; ?>"
+<div id="chat" class="flex-column <?php if (isset($config['draggable']) && $config['draggable'] ||
+    isset($config['foldable']) && $config['foldable']) echo 'closed'; ?>"
      data-config='<?= json_encode($config) ?>'
      data-session='<?= json_encode($session) ?>'
      style="display: none">
