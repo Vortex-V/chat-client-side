@@ -226,7 +226,11 @@ $(() => {
                         .addClass('justify-content-between')
                         .append('<div class="my-message d-flex justify-content-center align-items-center">Я</div>');
                 } else {
-                    leftColumn.append('<img alt="user" src="/assets/files/users_default_avatars/User%20avatar.svg">'); //TODO получать src у пользователя или подумать ещё раз
+                    if (this.users[user_id].avatar_url){
+                        leftColumn.append(`<img alt="user" src="${this.users[user_id].avatar_url}">`);
+                    } else {
+                        leftColumn.append('<div class="chat-svg chat-user-default">');
+                    }
                     messageHead.text(this.users[user_id].displayName);
                 }
 

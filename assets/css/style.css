@@ -207,3 +207,8 @@
 .chat-send-message-svg:hover {
     background-image: url('../files/send-message-hover.svg');
 }
+
+.chat-user-default{
+    width: 25px;
+    background-image: url('../files/users_default_avatars/User avatar.svg');
+}
