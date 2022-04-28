@@ -99,7 +99,14 @@ $(() => {
             }
         }
 
+        this.showFlexEl = function (el = null) {
+            el = el ?? this;
+            el.addClass('d-flex').show();
+            return this;
+        }
+
         this.setDraggable = function () {
+            let topPanel = EL.topPanel;
             this.css('position', 'fixed')
                 .draggable({
                     handle: EL.topPanel,
@@ -114,7 +121,31 @@ $(() => {
                         }, 1);
                     }
                 })
-                .toggleOpen();
+                .on('chatOpen', () => {
+                    this.draggable('enable');
+                })
+                .on('chatClose', () => {
+                    this.draggable('disable');
+                })
+                .setFoldable();
+        }
+
+        this.setFoldable = function () {
+            /* Открывает окно чата при нажатии Ctrl+Shift+ArrowUp
+            TODO: сделать комбинацию клавиш настриваемой */
+            $(document).keydown((e) => {
+                let keyEvent = e.originalEvent;
+                if (keyEvent.keyCode === 38 && keyEvent.shiftKey && keyEvent.ctrlKey) {
+                    this.toggleOpen();
+                }
+            });
+            let topPanel = EL.topPanel;
+            topPanel.click(() => {
+                if (topPanel.allowClick) {
+                    this.toggleOpen();
+                }
+            });
+            this.showFlexEl(topPanel);
         }
 
         /**
@@ -217,7 +248,7 @@ $(() => {
                 // Является ли ответом на сообщение
                 if (replied_to) {
                     messageHead
-                        .append($('<div class="text-end">на </div>')
+                        .append($('<div class="text-end">&nbsp;на </div>')
                             .append(
                                 $('<a class="message-link">сообщение</a>').attr('href', '#message_' + replied_to)
                             )
@@ -407,14 +438,7 @@ $(() => {
             topPanel: 'top-panel',
             messageTextArea: 'message-textarea',
             textAreaHeight: 'textarea-height',
-            messagesList: 'messages-list',
             buttonSendMessage: 'send-message',
-            messageContextMenu: [
-                'message-contextmenu',
-                {
-                    reply: 'message-reply',
-                },
-            ],
             messageAdditional: [
                 'message-additional',
                 {
@@ -422,6 +446,13 @@ $(() => {
                     reply: 'message-additional-reply',
                     mention: 'message-additional-mention',
                 }
+            ],
+            messagesList: 'messages-list',
+            messageContextMenu: [
+                'message-contextmenu',
+                {
+                    reply: 'message-reply',
+                },
             ]
         });
 
@@ -432,15 +463,6 @@ $(() => {
 
 
         // EVENTS
-
-        /* Открывает окно чата при нажатии Ctrl+Shift+ArrowUp
-        TODO: сделать комбинацию клавиш настриваемой */
-        $(document).keydown((e) => {
-            let keyEvent = e.originalEvent;
-            if (keyEvent.keyCode === 38 && keyEvent.shiftKey && keyEvent.ctrlKey) {
-                this.toggleOpen();
-            }
-        });
 
         this
             .on('chatLoadFromSessionStorage', () => {
@@ -476,7 +498,6 @@ $(() => {
                         .addClass('d-flex');
                     EL.messageTextArea[0].disabled = false;
                     EL.messageTextArea.focus();
-                    this.draggable('enable');
                 },
             )
             .on('chatClose', () => {
@@ -485,7 +506,6 @@ $(() => {
                     .hide();
                 EL.messageTextArea.blur();
                 EL.messageTextArea[0].disabled = true;
-                this.draggable('disable');
             });
 
         EL.messageTextArea
@@ -496,12 +516,6 @@ $(() => {
                 }
             });
 
-        let topPanel = EL.topPanel;
-        topPanel.click(() => {
-            if (topPanel.allowClick) {
-                this.toggleOpen();
-            }
-        });
 
         EL.buttonSendMessage.click(() => this.sendMessage());
 
@@ -529,9 +543,9 @@ $(() => {
         // LOAD
 
         let config = JSON.parse(this.attr('data-config')) ?? null;
-        this.removeAttr('data-config');
         let sessionData = JSON.parse(this.attr('data-session')) ?? null;
-        this.removeAttr('data-session');
+        this.removeAttr('data-config')
+            .removeAttr('data-session');
 
         if (config) {
             if (config.apiUrl) {
@@ -544,6 +558,8 @@ $(() => {
 
             if (config.draggable) {
                 this.setDraggable();
+            } else if (config.foldable) {
+                this.setFoldable();
             }
 
             if (config.dev) {
@@ -559,7 +575,8 @@ $(() => {
             this.throwException('Отсутствуют данные о сессии');
         }
 
-        this.updateFieldHeight(); //Чтобы не стёртый ранее текст из поля ввода сообщения влиял на высоту блока ввода после обновления страницы
+        this.showFlexEl()
+            .updateFieldHeight(); //Чтобы не стёртый ранее текст из поля ввода сообщения влиял на высоту блока ввода после обновления страницы
     }
 
     Chat.prototype = $('#chat');

@@ -26,6 +26,8 @@ trait ChatConfig
 
     public bool $draggable;
 
+    public bool $foldable;
+
     /**
      * При выполнении JS запишет объект чата в window
      * @var bool
@@ -39,6 +41,7 @@ trait ChatConfig
             'apiUrl',
             'css',
             'draggable',
+            'foldable',
         ];
     }
 

@@ -26,6 +26,7 @@ try {
         ],
         'dev' => true,
         'draggable' => true,
+        'foldable' => true,
         'session' => [
             'userId' => 2,
             'roomId' => 1,

@@ -4,10 +4,11 @@
  * @var array $session
  */
 ?>
-<div id="chat" class="d-flex flex-column"
+<div id="chat" class="flex-column <?php if ($config['draggable'] || $config['foldable']) echo 'closed'; ?>"
      data-config='<?= json_encode($config) ?>'
-     data-session='<?= json_encode($session) ?>'>
-    <div id="chat-top-panel" class="d-flex justify-content-center align-content-center">
+     data-session='<?= json_encode($session) ?>'
+     style="display: none">
+    <div id="chat-top-panel" class="justify-content-center align-content-center" style="display: none">
         <div class="chat-svg chat-arrow-svg"></div>
     </div>
     <div class="chat-message-input-region d-flex">
