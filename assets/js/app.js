@@ -195,7 +195,7 @@ $(() => {
         this.messageView = function (data) {
             let id = data.id,
                 body = data.body,
-                timestamp = data.timestamp,
+                timestamp = new Date(data.timestamp),
                 user_id = data.user_id,
                 replied_to = data.replied_to ?? null,
                 mention = data.mention ?? null,
@@ -204,6 +204,9 @@ $(() => {
                 id: id,
                 user_id: user_id
             });
+
+            let h = timestamp.getHours(),
+                m = timestamp.getMinutes();
 
             if (user_id === 1) { // Значит это системное сообщение
                 div.addClass('system-message text-center').append(`<div class="formatted-message-text">${body}</div>`);
@@ -226,7 +229,7 @@ $(() => {
                         .addClass('justify-content-between')
                         .append('<div class="my-message d-flex justify-content-center align-items-center">Я</div>');
                 } else {
-                    if (this.users[user_id].avatar_url){
+                    if (this.users[user_id].avatar_url) {
                         leftColumn.append(`<img alt="user" src="${this.users[user_id].avatar_url}">`);
                     } else {
                         leftColumn.append('<div class="chat-svg chat-user-default">');
@@ -276,7 +279,7 @@ $(() => {
                     );
 
                 // Время отправки
-                rightColumn.append(`<div class="message-timestamp">${timestamp}</div>`);
+                rightColumn.append(`<div class="message-timestamp">${h + ':' + m}</div>`);
 
 
                 div.append(leftColumn, centerColumn, rightColumn);
