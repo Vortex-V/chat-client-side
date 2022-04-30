@@ -32,6 +32,9 @@ $(() => {
 
         this.message = {};
 
+        this.oldestMessage = null;
+        this.getMessagesLimit = 20;
+
         // END ATTRIBUTES
 
 
@@ -92,9 +95,12 @@ $(() => {
         this.toggleOpen = function () {
             if (this.hasClass('closed')) {
                 this.removeClass('closed');
+                EL.wrapper.show();
+                EL.messageTextArea.focus();
                 this.trigger('chatOpen');
             } else {
                 this.addClass('closed');
+                EL.wrapper.hide();
                 this.trigger('chatClose');
             }
         }
@@ -107,7 +113,11 @@ $(() => {
 
         this.setDraggable = function () {
             let topPanel = EL.topPanel;
-            this.css('position', 'fixed')
+            this.css({
+                position: 'fixed',
+                bottom: 10,
+                right: 10,
+            })
                 .draggable({
                     handle: EL.topPanel,
                     stack: this,
@@ -131,8 +141,7 @@ $(() => {
         }
 
         this.setFoldable = function () {
-            /* Открывает окно чата при нажатии Ctrl+Shift+ArrowUp
-            TODO: сделать комбинацию клавиш настриваемой */
+            /* Открывает окно чата при нажатии Ctrl+Shift+ArrowUp TODO: сделать комбинацию клавиш настриваемой */
             $(document).keydown((e) => {
                 let keyEvent = e.originalEvent;
                 if (keyEvent.keyCode === 38 && keyEvent.shiftKey && keyEvent.ctrlKey) {
@@ -174,7 +183,11 @@ $(() => {
 
         this.showMessages = function (messages) {
             for (const message of messages) {
-                this.messageView(message);
+                if (message.user_id === 1) {
+                    this.systemMessageView(message);
+                } else {
+                    this.messageView(message);
+                }
             }
         }
 
@@ -196,99 +209,108 @@ $(() => {
             let id = data.id,
                 body = data.body,
                 timestamp = new Date(data.timestamp),
-                user_id = data.user_id,
-                replied_to = data.replied_to ?? null,
+                userId = data.user_id,
+                repliedTo = data.replied_to ?? null,
                 mention = data.mention ?? null,
                 files = data.files ?? null;
-            let div = $('<div class="chat-message">').data({
-                id: id,
-                user_id: user_id
-            });
 
             let h = timestamp.getHours(),
                 m = timestamp.getMinutes();
 
-            if (user_id === 1) { // Значит это системное сообщение
-                div.addClass('system-message text-center').append(`<div class="formatted-message-text">${body}</div>`);
+            let div = $('<div class="chat-message d-flex">')
+                .data({
+                    id: id,
+                    userId: userId
+                })
+                .attr('id', 'chat-message-' + id);
+
+            let leftColumn = $('<div>', {class: 'message-left-col'});
+
+            let centerColumn = $('<div class="message-center-col d-flex flex-column flex-fill mx-1">');
+            let messageHead = $('<div class="d-flex flex-wrap message-head px-1">');
+
+            let rightColumn = $('<div class="message-right-col d-flex flex-column align-items-center justify-content-end">');
+
+            // Это сообщение мое или чьё-то
+            if (userId === parseInt(this.userId)) {
+                rightColumn
+                    .removeClass('justify-content-end')
+                    .addClass('justify-content-between')
+                    .append('<div class="my-message d-flex justify-content-center align-items-center">Я</div>');
             } else {
-                div
-                    .attr('id', 'message_' + id)
-                    .addClass('d-flex');
-
-                let leftColumn = $('<div>', {class: 'message-left-col'});
-
-                let centerColumn = $('<div class="message-center-col d-flex flex-column flex-fill mx-1">');
-                let messageHead = $('<div class="d-flex flex-wrap message-head px-1">');
-
-                let rightColumn = $('<div class="message-right-col d-flex flex-column align-items-center justify-content-end">');
-
-                // Это сообщение мое или чьё-то
-                if (user_id === parseInt(this.userId)) {
-                    rightColumn
-                        .removeClass('justify-content-end')
-                        .addClass('justify-content-between')
-                        .append('<div class="my-message d-flex justify-content-center align-items-center">Я</div>');
+                if (this.users[userId].avatar_url) {
+                    leftColumn.append(`<img alt="user" src="${this.users[userId].avatar_url}">`);
                 } else {
-                    if (this.users[user_id].avatar_url) {
-                        leftColumn.append(`<img alt="user" src="${this.users[user_id].avatar_url}">`);
-                    } else {
-                        leftColumn.append('<div class="chat-svg chat-user-default">');
-                    }
-                    messageHead.text(this.users[user_id].displayName);
+                    leftColumn.append('<div class="chat-svg chat-user-default">');
                 }
-
-                // Является ли сообщение ответом кому-то
-                if (mention) {
-                    let mentionDiv = $();
-                    if (mention instanceof 'int') {
-                        mentionDiv = mentionDiv.add(`<a class="message-link">${mention}</a>`);
-                    } else {
-                        div.data('mention', mention);
-                        mentionDiv = mentionDiv
-                            .add(`<span class="message-mention">пользователям</span>`)
-                        //TODO .click();
-                    }
-
-                    messageHead.append($(`<div class="text-end">ответил(а) ${mentionDiv[0]}</div>`));
-                }
-
-                // Является ли ответом на сообщение
-                if (replied_to) {
-                    messageHead
-                        .append($('<div class="text-end">&nbsp;на </div>')
-                            .append(
-                                $('<a class="message-link">сообщение</a>').attr('href', '#message_' + replied_to)
-                            )
-                        );
-                }
-
-                centerColumn.append(messageHead)
-
-                // Прикрепленные файлы
-                if (files) {
-                    for (let file of files) {
-                        centerColumn.append(`<div class="message-attached-file">file_${file.id}${" | " + file.name ?? ""}</div>`);
-                    }
-                }
-                // Текст сообщения
-                centerColumn
-                    .append($('<div class="message-body formatted-message-text mt-1 px-1">')
-                        .append($('<div>')
-                            .append(this.splitToDivs(body))
-                        )
-                    );
-
-                // Время отправки
-                rightColumn.append(`<div class="message-timestamp">${h + ':' + m}</div>`);
-
-
-                div.append(leftColumn, centerColumn, rightColumn);
-
-                // Контекстное меню
-                div.contextmenu((e) => this.showContextMenu(e));
+                messageHead.text(this.users[userId].displayName);
             }
 
+            // Является ли сообщение ответом кому-то
+            if (mention) {
+                let mentionDiv = $();
+                if (mention instanceof 'int') {
+                    mentionDiv = mentionDiv.add(`<a class="message-link">${mention}</a>`);
+                } else {
+                    div.data('mention', mention);
+                    mentionDiv = mentionDiv
+                        .add(`<span class="message-mention">пользователям</span>`)
+                    //TODO .click();
+                }
+
+                messageHead.append($(`<div class="text-end">ответил(а) ${mentionDiv[0]}</div>`));
+            }
+
+            // Является ли ответом на сообщение
+            if (repliedTo) {
+                messageHead
+                    .append($('<div class="text-end">&nbsp;на </div>')
+                        .append(
+                            $('<a class="message-link">сообщение</a>').attr('href', '#message_' + repliedTo)
+                        )
+                    );
+            }
+
+            centerColumn.append(messageHead)
+
+            // Прикрепленные файлы
+            if (files) {
+                for (let file of files) {
+                    centerColumn.append(`<div class="message-attached-file">file_${file.id}${" | " + file.name ?? ""}</div>`);
+                }
+            }
+            // Текст сообщения
+            centerColumn
+                .append($('<div class="message-body formatted-message-text mt-1 px-1">')
+                    .append($('<div>')
+                        .append(this.splitToDivs(body))
+                    )
+                );
+
+            // Время отправки
+            rightColumn.append(`<div class="message-timestamp">${h + ':' + m}</div>`);
+
+
+            div.append(leftColumn, centerColumn, rightColumn);
+
+            // Контекстное меню
+            div.contextmenu((e) => this.showContextMenu(e));
+
             EL.messagesList.prepend(div);
+        }
+
+        /**
+         * Системное сообщение
+         * @param data {{
+         *     body: string
+         * } | string}
+         */
+        this.systemMessageView = function (data) {
+            let body = data.body ?? data;
+
+            EL.messagesList.prepend($('<div class="chat-message">')
+                .addClass('system-message text-center')
+                .append(`<div class="formatted-message-text">${body}</div>`));
         }
 
         this.showContextMenu = function (e) {
@@ -318,10 +340,9 @@ $(() => {
                     left: menuEdges.left,
                     top: menuEdges.top,
                 })
-                .data($(e.currentTarget).data())
+                .data($(e.currentTarget).data('id'))
                 .show('fadeIn');
         }
-
 
         this.addReply = function (id) {
             this.message.replied_to = id;
@@ -335,7 +356,7 @@ $(() => {
                 .slideDown(200);
         }
 
-        this.addMention = function (e, user_id) { // TODO
+        this.addMention = function (user_id) { // TODO
             if (!this.message.mention) this.message.mention = [];
             this.message.mention.push(user_id);
             let mention = EL.messageAdditional.mention;
@@ -345,42 +366,35 @@ $(() => {
                 );
         }
 
-        // КОСТЫЛЬ
-
-        this.getTime = function () {
-            d = new Date();
-            h = d.getHours();
-            h / 10 < 1 ? h = '0' + h : h;
-            m = d.getMinutes();
-            m / 10 < 1 ? m = '0' + m : m;
-            return h + ':' + m;
-        }
-
-        // END КОСТЫЛЬ
-
 
         // REQUESTS
 
-        this.getRoomUsers = function () {
-            chatAjax('/roomUsers', {
+        this.getRoom = function () {
+            chatAjax('/room', {
                 room_id: this.roomId,
+                user_id: this.userId,
+                params: {
+                    limit: this.getMessagesLimit,
+                    id: this.oldestMessage ?? null,
+                }
             })
-                /** @param users {{
-                 *      id: {
-                 *          id: int,
-                 *          displayName: string,
-                 *      }
-                 *  }}
-                 * */
-                .done((users) => {
-                    if (typeof users === 'object') {
-                        sessionStorage.chatUsers = JSON.stringify(users);
-                        this.users = users;
-                        this.trigger('chatLoadMessages');
+                .done((room) => {
+                    if (typeof room === 'object') {
+                        if (room.users) {
+                            this.users = room.users;
+                        } else {
+                            this.systemMessageView('В комнату не добавлено ни одного пользователя');
+                        }
+                        if (room.messages) {
+                            this.showMessages(room.messages);
+                        } else {
+                            this.systemMessageView('Здесь пока нет ни одного сообщения');
+                        }
                     } else {
-                        this.throwException('Ошибка на стороне сервера');
+                        this.systemMessageView('Ошибка загрузки комнаты');
                     }
-                });
+                })
+                .fail(() => this.systemMessageView('Ошибка загрузки комнаты'));
         }
 
         this.getRoomMessages = function () {
@@ -389,13 +403,14 @@ $(() => {
                     user_id: this.userId,
                     room_id: this.roomId,
                     params: {
-                        limit: 20,
-                        page: 1,
+                        limit: this.getMessagesLimit,
+                        id: this.oldestMessage ?? null,
                     }
                 })
                 .done((messages) => {
                     if (typeof messages === 'object') {
-                        sessionStorage.chatMessages = JSON.stringify(messages);
+                        console.log(messages);
+                        //this.oldestMessage = messages[0].id;
                         this.showMessages(messages);
                     } else {
                         this.throwException('Ошибка на стороне сервера');
@@ -406,19 +421,12 @@ $(() => {
         this.sendMessage = function () {
             let body = EL.messageTextArea.val();
             if (body) {
-                let message = this.message;
-                if (message.replied_to) {
-                    let repliedMessageUserId = $('#message_' + message.replied_to).data('user_id');
-                    if (!message.mention) message.mention = [];
-                    message.mention.push(repliedMessageUserId);
-                }
                 chatAjax('/sendMessage',
-                    Object.assign(message, {
+                    Object.assign(this.message, {
                         user_id: this.userId,
                         room_id: this.roomId,
                         body: body
-                    }),
-                    POST)
+                    }), POST)
                     .done((message) => {
                         this.messageView(message);
                         EL.messageTextArea.val('');
@@ -429,7 +437,6 @@ $(() => {
                         EL.messageAdditional.reply
                             .empty()
                             .hide();
-                        sessionStorage.removeItem('chatMessages');
                     });
             }
         }
@@ -443,6 +450,7 @@ $(() => {
 
         const EL = this.elements({
             topPanel: 'top-panel',
+            wrapper: 'wrapper',
             messageTextArea: 'message-textarea',
             textAreaHeight: 'textarea-height',
             buttonSendMessage: 'send-message',
@@ -471,50 +479,6 @@ $(() => {
 
         // EVENTS
 
-        this
-            .on('chatLoadFromSessionStorage', () => {
-                if (sessionStorage.pathname !== location.pathname) { // TODO Вероятно (и возможно что довольно таки) глупое решение. Подумать.
-                    this.trigger('chatNeedsUpdate');
-                }
-                if (sessionStorage.chatUsers) {
-                    this.users = JSON.parse(sessionStorage.chatUsers);
-                    this.trigger('chatLoadMessages');
-                } else {
-                    this.getRoomUsers(); // устанавливает sessionStorage.users и this.users
-                }
-            })
-            .on('chatNeedsUpdate', () => {
-                sessionStorage.pathname = location.pathname;
-                sessionStorage.removeItem('chatUsers');
-                sessionStorage.removeItem('chatMessages');
-            })
-            .on('chatLoadMessages', () => {
-                if (sessionStorage.chatMessages) {
-                    if (this.users) {
-                        this.showMessages(JSON.parse(sessionStorage.chatMessages));
-                    } else {
-                        this.throwException('Chat: отсутствуют пользователи');
-                    }
-                } else {
-                    this.getRoomMessages(); // устанавливает sessionStorage.messages
-                }
-            })
-            .on('chatOpen', () => {
-                    EL.messagesList
-                        .show()
-                        .addClass('d-flex');
-                    EL.messageTextArea[0].disabled = false;
-                    EL.messageTextArea.focus();
-                },
-            )
-            .on('chatClose', () => {
-                EL.messagesList
-                    .removeClass('d-flex')
-                    .hide();
-                EL.messageTextArea.blur();
-                EL.messageTextArea[0].disabled = true;
-            });
-
         EL.messageTextArea
             .on('input', () => this.updateFieldHeight())
             .keydown((e) => {  /* Отправляет сообщение на Ctrl+Enter TODO: сделать комбинацию клавиш настриваемой */
@@ -522,7 +486,6 @@ $(() => {
                     this.sendMessage();
                 }
             });
-
 
         EL.buttonSendMessage.click(() => this.sendMessage());
 
@@ -561,13 +524,13 @@ $(() => {
                 this.throwException('Отсутствует API URL');
             }
 
-            if (config.css) this.css(config.css);
-
             if (config.draggable) {
                 this.setDraggable();
             } else if (config.foldable) {
                 this.setFoldable();
             }
+
+            if (config.css) this.css(config.css);
 
             if (config.dev) {
                 window.chat = this;
@@ -577,12 +540,13 @@ $(() => {
         if (sessionData) {
             this.userId = sessionData.userId;
             this.roomId = sessionData.roomId;
-            this.trigger('chatLoadFromSessionStorage');
+            this.getRoom();
         } else {
+            this.systemMessageView('Ошибка загрузки комнаты');
             this.throwException('Отсутствуют данные о сессии');
         }
 
-        this.showFlexEl()
+        this.show()
             .updateFieldHeight(); //Чтобы не стёртый ранее текст из поля ввода сообщения влиял на высоту блока ввода после обновления страницы
     }
 

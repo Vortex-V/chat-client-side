@@ -6,15 +6,12 @@
 }
 
 #chat {
-    bottom: 10px;
-    right: 10px;
     width: 360px;
     height: 560px;
     transition-timing-function: cubic-bezier(.1, .57, .21, .98);
     transition-duration: 0.5s;
-
-    background: var(--chat-bg);
-    z-index: 1000;
+    background-color: var(--chat-bg);
+    z-index: 100;
 }
 
 #chat.closed {
@@ -22,6 +19,10 @@
     top: auto !important;
     bottom: 0 !important;
     overflow: hidden;
+}
+
+#chat-wrapper {
+    background-color: inherit;
 }
 
 #chat.ui-draggable-dragging {
@@ -33,10 +34,17 @@
     background: var(--chat-gradient), var(--chat-primary);
 }
 
+#chat.closed #chat-top-panel svg {
+    transform: rotateX(180deg);
+}
+
+
+/* Ввод сообщения */
+
 .chat-message-input-region {
     padding: 5px 10px;
     box-sizing: border-box;
-    background: inherit;
+    background-color: inherit;
     border-bottom: 1px var(--chat-primary) solid;
 }
 
@@ -66,18 +74,6 @@
     overflow: hidden;
 }
 
-.formatted-message-text {
-    width: 100%;
-    max-width: 100%;
-    line-height: 25px;
-}
-
-.formatted-message-text * {
-    min-height: 25px;
-    max-width: 100%;
-    word-wrap: break-word;
-}
-
 #chat-message-additional {
     font-size: 14px;
     box-shadow: 0 3px 5px 0 #223C5033;
@@ -86,6 +82,9 @@
 #chat-message-additional * {
     min-width: 100%;
 }
+
+
+/* Список сообщений и сообщение */
 
 .scrollable {
     overflow-y: auto;
@@ -164,12 +163,29 @@
     max-width: 100%;
 }
 
-#chat-message-contextmenu {
+.formatted-message-text {
+    width: 100%;
+    max-width: 100%;
+    line-height: 25px;
+}
+
+.formatted-message-text * {
+    min-height: 25px;
+    max-width: 100%;
+    word-wrap: break-word;
+}
+
+
+/* Контекстные меню */
+
+#chat .chat-context-menu {
     border-top: 2px var(--chat-primary) solid;
     background-color: var(--chat-bg);
     list-style: none;
+}
+
+#chat-message-contextmenu {
     transform-origin: left;
-    overflow: hidden;
 }
 
 #chat-message-contextmenu > * {
@@ -181,19 +197,14 @@
     cursor: default;
 }
 
+
+/* SVG */
+
 .chat-svg {
     width: 15px;
     height: 25px;
     background-position: center;
     background-repeat: no-repeat;
-}
-
-.chat-arrow-svg {
-    background-image: url('../files/arrow.svg');
-}
-
-#chat.closed .chat-arrow-svg {
-    transform: rotateX(180deg);
 }
 
 .chat-plus-svg {
@@ -208,7 +219,14 @@
     background-image: url('../files/send-message-hover.svg');
 }
 
-.chat-user-default{
+.chat-user-default {
     width: 25px;
     background-image: url('../files/users_default_avatars/User avatar.svg');
+}
+
+
+/* Шаблон для использования в JS */
+
+.chat-block-pattern {
+    display: none !important;
 }
