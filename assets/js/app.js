@@ -1,5 +1,9 @@
 $(() => {
-    let API = null;
+    let API = null,
+        session = {
+            userId: null,
+            roomId: null
+        };
     const POST = 'post',
         GET = 'get';
 
@@ -9,16 +13,19 @@ $(() => {
             method: method,
             contentType: 'application/json',
         };
-        if (data) {
-            if (method === GET) {
-                options.data = data;
-            } else {
-                options.data = JSON.stringify(data);
-            }
+        let defaults = {
+            room_id: session.roomId,
+            user_id: session.userId
         }
+        data ?
+            data = Object.assign(defaults, data)
+            : data = defaults;
+        method === GET ?
+            options.data = data
+            : options.data = JSON.stringify(data);
         return $.ajax(API + query, options)
             .fail((jqXHR) => {
-                console.log(jqXHR.responseJSON);
+                console.log(jqXHR.message, jqXHR.responseJSON);
             });
     }
 
@@ -27,8 +34,6 @@ $(() => {
         // ATTRIBUTES
 
         this.users = null;
-        this.userId = null;
-        this.roomId = null;
 
         this.message = {};
 
@@ -92,19 +97,6 @@ $(() => {
             throw message;
         };
 
-        this.toggleOpen = function () {
-            if (this.hasClass('closed')) {
-                this.removeClass('closed');
-                EL.wrapper.show();
-                EL.messageTextArea.focus();
-                this.trigger('chatOpen');
-            } else {
-                this.addClass('closed');
-                EL.wrapper.hide();
-                this.trigger('chatClose');
-            }
-        }
-
         this.setDraggable = function () {
             let topPanel = EL.topPanel;
             this.css({
@@ -151,6 +143,42 @@ $(() => {
                 }
             });
             topPanel.addClass('d-flex').show();
+        }
+
+        /**
+         * @param data {{
+         *     type: 'manually'|'automatically',
+         *     interval: int | null
+         * } | 'manually'}
+         */
+        this.setMessagesUpdateMethod = function (data) {
+            let methods = {
+                manually: () => {
+                    EL.updateMessages
+                        .click(() => this.updateMessages())
+                        .addClass('d-flex')
+                        .show()
+                },
+                automatically: (interval) => setInterval(() => {
+                    this.updateMessages();
+                }, interval),
+            };
+            let type = data.type ?? data,
+                interval = data.interval ?? 5000;
+            if (Object.keys(methods).includes(type)) methods[type](interval);
+        }
+
+        this.toggleOpen = function () {
+            if (this.hasClass('closed')) {
+                this.removeClass('closed');
+                EL.wrapper.show();
+                EL.messageTextArea.focus();
+                this.trigger('chatOpen');
+            } else {
+                this.addClass('closed');
+                EL.wrapper.hide();
+                this.trigger('chatClose');
+            }
         }
 
         /**
@@ -228,7 +256,7 @@ $(() => {
             let rightColumn = $('<div class="message-right-col d-flex flex-column align-items-center justify-content-end">');
 
             // Это сообщение мое или чьё-то
-            if (userId === parseInt(this.userId)) {
+            if (userId === parseInt(session.userId)) {
                 rightColumn
                     .removeClass('justify-content-end')
                     .addClass('justify-content-between')
@@ -335,7 +363,7 @@ $(() => {
                     left: menuEdges.left,
                     top: menuEdges.top,
                 })
-                .data('id',$(e.currentTarget).data('id'))
+                .data('id', $(e.currentTarget).data('id'))
                 .show('fadeIn');
         }
 
@@ -366,8 +394,6 @@ $(() => {
 
         this.getRoom = function () {
             chatAjax('/room', {
-                room_id: this.roomId,
-                user_id: this.userId,
                 params: {
                     limit: this.getMessagesLimit,
                     id: this.oldestMessage ?? null,
@@ -393,15 +419,12 @@ $(() => {
         }
 
         this.getRoomMessages = function () {
-            chatAjax('/roomMessages',
-                {
-                    user_id: this.userId,
-                    room_id: this.roomId,
-                    params: {
-                        limit: this.getMessagesLimit,
-                        id: this.oldestMessage ?? null,
-                    }
-                })
+            chatAjax('/roomMessages', {
+                params: {
+                    limit: this.getMessagesLimit,
+                    id: this.oldestMessage ?? null,
+                }
+            })
                 .done((messages) => {
                     if (typeof messages === 'object') {
                         console.log(messages);
@@ -418,8 +441,6 @@ $(() => {
             if (body) {
                 chatAjax('/sendMessage',
                     Object.assign(this.message, {
-                        user_id: this.userId,
-                        room_id: this.roomId,
                         body: body
                     }), POST)
                     .done((message) => {
@@ -434,6 +455,17 @@ $(() => {
                             .hide();
                     });
             }
+        }
+
+        this.updateMessages = function () {
+            chatAjax('/updateMessages')
+                .done((messages) => {
+                    if (typeof messages === 'object') {
+                        this.showMessages(messages);
+                    } else {
+                        this.throwException('Ошибка на стороне сервера');
+                    }
+                });
         }
 
         // END REQUESTS
@@ -458,6 +490,8 @@ $(() => {
                 }
             ],
             messagesList: 'messages-list',
+            showUsersList: 'show-users-list',
+            updateMessages: 'update-messages',
             messageContextMenu: [
                 'message-contextmenu',
                 {
@@ -507,17 +541,25 @@ $(() => {
 
         // LOAD
 
+        /**
+         * @type {{
+         *     apiUrl: 'string',
+         *     draggable: boolean|null,
+         *     foldable: boolean|null,
+         *     css: object|null,
+         *     updateMessages: object|string|null,
+         *     dev: boolean|null
+         * }|null}
+         */
         let config = JSON.parse(this.attr('data-config')) ?? null;
         let sessionData = JSON.parse(this.attr('data-session')) ?? null;
         this.removeAttr('data-config')
             .removeAttr('data-session');
 
         if (config) {
-            if (config.apiUrl) {
-                API = config.apiUrl;
-            } else {
-                this.throwException('Отсутствует API URL');
-            }
+            config.apiUrl ?
+                API = config.apiUrl
+                : this.throwException('Отсутствует API URL');
 
             if (config.draggable) {
                 this.setDraggable();
@@ -527,14 +569,15 @@ $(() => {
 
             if (config.css) this.css(config.css);
 
-            if (config.dev) {
-                window.chat = this;
-            }
+            config.updateMessages ?
+                this.setMessagesUpdateMethod(config.updateMessages)
+                : this.setMessagesUpdateMethod('manually');
+
+            if (config.dev) window.chat = this;
         }
 
         if (sessionData) {
-            this.userId = sessionData.userId;
-            this.roomId = sessionData.roomId;
+            session = sessionData;
             this.getRoom();
         } else {
             this.systemMessageView('Ошибка загрузки комнаты');

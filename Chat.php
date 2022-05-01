@@ -11,13 +11,19 @@ class Chat
      * ]
      * @var array
      */
-    public array $session;
+    public $session;
 
-    public string $apiUrl;
+    /**
+     * @var string
+     */
+    public $apiUrl;
 
-    const UPDATE_MANUALLY = 0;
-    const UPDATE_AUTOMATICALLY = 1;
-    public int $update;
+    /**
+     * @var array|int
+     */
+    public $updateMessages;
+    const UPDATE_MANUALLY = 'manually'; // default
+    const UPDATE_AUTOMATICALLY = 'automatically';
 
     /**
      * Например
@@ -26,17 +32,23 @@ class Chat
      * ]
      * @var array
      */
-    public array $css;
+    public $css;
 
-    public bool $draggable;
+    /**
+     * @var bool
+     */
+    public $draggable;
 
-    public bool $foldable;
+    /**
+     * @var bool
+     */
+    public $foldable;
 
     /**
      * При выполнении JS запишет объект чата в window
      * @var bool
      */
-    public bool $dev;
+    public $dev;
 
     public static function varsForConfig(): array
     {
@@ -46,6 +58,7 @@ class Chat
             'css',
             'draggable',
             'foldable',
+            'updateMessages',
         ];
     }
 

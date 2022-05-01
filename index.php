@@ -2,6 +2,8 @@
 
 // Файл тестирования приложения
 
+use vortex_v\chat_widget\Chat;
+
 require_once __DIR__ . '/vendor/' . 'autoload.php';
 ?>
 <!DOCTYPE html>
@@ -19,7 +21,7 @@ require_once __DIR__ . '/vendor/' . 'autoload.php';
 <body>
 <?php
 try {
-    echo \vortex_v\chat_widget\Chat::widget([
+    echo Chat::widget([
         'css' => [
             'right' => 10,
             'bottom' => 10,
