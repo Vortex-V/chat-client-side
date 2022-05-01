@@ -105,27 +105,23 @@ $(() => {
             }
         }
 
-        this.showFlexEl = function (el = null) {
-            el = el ?? this;
-            el.addClass('d-flex').show();
-            return this;
-        }
-
         this.setDraggable = function () {
             let topPanel = EL.topPanel;
             this.css({
                 position: 'fixed',
-                bottom: 10,
-                right: 10,
             })
                 .draggable({
                     handle: EL.topPanel,
                     stack: this,
                     disabled: true,
-                    start: function () {
+                    start: () => {
+                        this.css({
+                            right: 'auto',
+                            bottom: 'auto',
+                        });
                         topPanel.allowClick = false;
                     },
-                    stop: function () {
+                    stop: () => {
                         setTimeout(() => { // Не даёт произойти самостоятельному закрытию окна сразу после перетаскивания
                             topPanel.allowClick = true;
                         }, 1);
@@ -154,7 +150,7 @@ $(() => {
                     this.toggleOpen();
                 }
             });
-            this.showFlexEl(topPanel);
+            topPanel.addClass('d-flex').show();
         }
 
         /**
@@ -334,13 +330,12 @@ $(() => {
             if (menuEdges.left < chatEdges.left) menuEdges.left += chatEdges.left - menuEdges.left;
             if (menuEdges.right > chatEdges.right) menuEdges.left -= menuEdges.right - chatEdges.right;
             if (menuEdges.bottom > chatEdges.bottom) menuEdges.top -= menuEdges.bottom - chatEdges.bottom;
-
             messageContextMenu
                 .css({
                     left: menuEdges.left,
                     top: menuEdges.top,
                 })
-                .data($(e.currentTarget).data('id'))
+                .data('id',$(e.currentTarget).data('id'))
                 .show('fadeIn');
         }
 

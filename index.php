@@ -13,20 +13,20 @@ require_once __DIR__ . '/vendor/' . 'autoload.php';
     <title>Chat</title>
     <link rel="stylesheet" href="/vendor/npm-asset/bootstrap/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="/assets/css/style.css">
-    <link rel="shortcut icon" href="/assets/files/users_default_avatars/User%20avatar%20(1).png" type="image/x-icon">
+    <link rel="shortcut icon" href="/assets/files/users_default_avatars/User%20avatar.svg" type="image/x-icon">
 </head>
 
 <body>
 <?php
 try {
     echo \vortex_v\chat_widget\Chat::widget([
-        'apiUrl' => 'http://chat.api.click2mice.local',
         'css' => [
-            'position' => 'fixed',
+            'right' => 10,
+            'bottom' => 10,
         ],
+        'apiUrl' => 'http://api.chat.local',
         'dev' => true,
         'draggable' => true,
-        'foldable' => true,
         'session' => [
             'userId' => 2,
             'roomId' => 1,
