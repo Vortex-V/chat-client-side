@@ -46,27 +46,6 @@
         </div>
         <div class="p-2 scrollable">
             <div id="chat-messages-list" class="d-flex flex-column align-content-center w-100">
-                <div class="chat-message d-flex"><!--DEFAULT & MENTION-->
-                    <div class="message-left-col">
-                        <img src="../assets/files/users_default_avatars/User%20avatar.png" alt="User">
-                    </div>
-                    <div class="d-flex flex-column flex-fill mx-1 message-center-col">
-                        <div class="d-flex flex-wrap message-head">
-                            Товарищ Николай
-                            <div class="text-end w-100">
-                                ответ <span class="message-mention">@Товарищ Виталий</span>
-                            </div>
-                        </div>
-                        <div class="mt-1 message-body formatted-message-text">
-                            <div>
-                                Благодарю Вас, коллега. Рад, что работаю с такими Людьми!
-                            </div>
-                        </div>
-                    </div>
-                    <div class="d-flex flex-column message-right-col">
-                        <div class="d-flex align-self-end message-timestamp">9:00</div>
-                    </div>
-                </div>
                 <div class="chat-message justify-content-end d-flex"><!--FROM ME & FILE-->
                     <div class="message-left-col"></div>
                     <div class="d-flex flex-column flex-fill mx-1 message-center-col">

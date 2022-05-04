@@ -94,7 +94,8 @@
 }
 
 .chat-message {
-    padding-bottom: 20px;
+    margin-bottom: 1.25rem;
+    padding: .25rem;
 }
 
 .message-left-col img {
@@ -113,22 +114,14 @@
     min-width: 30px;
 }
 
-.message-center-col {
-    max-width: calc(100% - .5rem - 55px);
-}
-
 .message-head,
 .message-right-col {
     color: var(--gray);
 }
 
-.message-body {
-    word-wrap: break-word;
-}
-
-.message-body:hover {
+.chat-message:not(.system-message):hover {
     transition-duration: .5s;
-    border-radius: 5px;
+    border-radius: 15px 5px 15px 5px;
     background-color: var(--chat-hover);
 }
 
@@ -173,12 +166,13 @@
     width: 100%;
     max-width: 100%;
     line-height: 25px;
+    word-wrap: break-word;
 }
 
 .formatted-message-text * {
     min-height: 25px;
     max-width: 100%;
-    word-wrap: break-word;
+    word-break: break-word;
 }
 
 
@@ -237,9 +231,14 @@
     background-image: url('../files/plus.svg');
 }
 
-.chat-user-default {
+.chat-user-default-1 {
     width: 25px;
-    background-image: url('../files/users_default_avatars/User avatar.svg');
+    background-image: url('../files/users_default_avatars/User avatar-1.svg');
+}
+
+.chat-user-default-2 {
+    width: 25px;
+    background-image: url('../files/users_default_avatars/User avatar-2.svg');
 }
 
 /* Будет сохранён в JS */

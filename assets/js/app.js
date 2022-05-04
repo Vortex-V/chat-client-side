@@ -208,7 +208,7 @@ $(() => {
         this.showMessages = function (messages) {
             let date = '';
             for (const message of messages) {
-                if (date !== message.timestamp.date){
+                if (date !== message.timestamp.date) {
                     date = message.timestamp.date;
                     this.systemMessageView(date, true);
                 }
@@ -230,7 +230,7 @@ $(() => {
          *     },
          *     user_id: int,
          *     replied_to: int | null,
-         *     mention: array | int | null,
+         *     mention: array | null,
          *     files: [{
          *          id: string,
          *          name: string|null,
@@ -255,47 +255,48 @@ $(() => {
 
             let leftColumn = $('<div>', {class: 'message-left-col'});
 
-            let centerColumn = $('<div class="message-center-col d-flex flex-column flex-fill mx-1">');
-            let messageHead = $('<div class="d-flex flex-wrap message-head px-1">');
+            let centerColumn = $('<div class="message-center-col d-flex flex-column flex-fill mx-2">');
+            let messageHead = $('<div class="d-flex flex-wrap message-head">');
 
             let rightColumn = $('<div class="message-right-col d-flex flex-column align-items-center justify-content-end">');
 
             // Это сообщение мое или чьё-то
+            let target, deflt = '1';
             if (userId === parseInt(session.userId)) {
-                rightColumn
+                target = rightColumn
                     .removeClass('justify-content-end')
-                    .addClass('justify-content-between')
-                    .append('<div class="my-message d-flex justify-content-center align-items-center">Я</div>');
+                    .addClass('justify-content-between');
+                deflt = 2
             } else {
-                if (this.users[userId].avatar_url) {
-                    leftColumn.append(`<img alt="user" src="${this.users[userId].avatar_url}">`);
-                } else {
-                    leftColumn.append('<div class="chat-svg chat-user-default">');
-                }
-                messageHead.text(this.users[userId].displayName);
+                target = leftColumn;
+                messageHead.text(this.users[userId].displayName + ' ');
+            }
+            if (this.users[userId].avatar_url) {
+                target.append(`<img alt="user" src="${this.users[userId].avatar_url}">`);
+            } else {
+                target.append(`<div class="chat-svg chat-user-default-${deflt}">`);
             }
 
             // Является ли сообщение ответом кому-то
             if (mention) {
-                let mentionDiv = $();
-                if (mention instanceof 'int') {
-                    mentionDiv = mentionDiv.add(`<a class="message-link">${mention}</a>`);
+                let mentionDiv;
+                if (mention.length === 1) {
+                    mentionDiv = $(`<a class="message-link">${this.users[mention].display_name}</a>`);
                 } else {
                     div.data('mention', mention);
-                    mentionDiv = mentionDiv
-                        .add(`<span class="message-mention">пользователям</span>`)
+                    mentionDiv = $(`<span class="message-mention">пользователям</span>`)
                     //TODO .click();
                 }
 
-                messageHead.append($(`<div class="text-end">ответил(а) ${mentionDiv[0]}</div>`));
+                messageHead.append($(`<div class="text-end">ответил(а) </div>`).append(mentionDiv));
             }
 
             // Является ли ответом на сообщение
             if (repliedTo) {
                 messageHead
-                    .append($('<div class="text-end">&nbsp;на </div>')
+                    .append($('<span>на </span>')
                         .append(
-                            $('<a class="message-link">сообщение</a>').attr('href', '#message_' + repliedTo)
+                            $('<a class="message-link">сообщение</a>').attr('href', '#chat-message-' + repliedTo)
                         )
                     );
             }
@@ -310,7 +311,7 @@ $(() => {
             }
             // Текст сообщения
             centerColumn
-                .append($('<div class="message-body formatted-message-text mt-1 px-1">')
+                .append($('<div class="message-body formatted-message-text mt-1">')
                     .append($('<div>')
                         .append(this.splitToDivs(body))
                     )
@@ -338,9 +339,12 @@ $(() => {
         this.systemMessageView = function (data, date = false) {
             let body = data.body ?? data;
 
-            EL.messagesList.prepend($('<div class="chat-message">')
-                .addClass('text-muted text-center' + (date ? ' chat-messages-date' : ''))
-                .append(`<div class="formatted-message-text">${body}</div>`));
+            let div = $('<div class="system-message chat-message text-muted text-center">')
+                .append(`<div class="formatted-message-text">${body}</div>`)
+
+            if (date) div.addClass('chat-messages-date small')
+
+            EL.messagesList.prepend(div);
         }
 
         this.showContextMenu = function (e) {
@@ -380,7 +384,7 @@ $(() => {
                 .hide()
                 .text('В ответ на ')
                 .append(
-                    $('<a class="message-link">сообщение</a>').attr('href', '#message_' + id)
+                    $('<a class="message-link">сообщение</a>').attr('href', '#chat-message-' + id)
                 )
                 .slideDown(200);
         }
@@ -444,14 +448,14 @@ $(() => {
                 }
             })
                 .done((messages) => {
-                        if (typeof messages === 'object') {
-                            console.log(messages);
-                            //this.oldestMessage = messages[0].id;
-                            this.showMessages(messages);
-                        } else {
-                            this.throwException('Ошибка на стороне сервера');
-                        }
-                    });
+                    if (typeof messages === 'object') {
+                        console.log(messages);
+                        //this.oldestMessage = messages[0].id;
+                        this.showMessages(messages);
+                    } else {
+                        this.throwException('Ошибка на стороне сервера');
+                    }
+                });
         }
 
         this.sendMessage = function () {

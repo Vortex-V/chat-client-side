@@ -15,7 +15,7 @@ require_once __DIR__ . '/vendor/' . 'autoload.php';
     <title>Chat</title>
     <link rel="stylesheet" href="/vendor/npm-asset/bootstrap/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="/assets/css/style.css">
-    <link rel="shortcut icon" href="/assets/files/users_default_avatars/User%20avatar.svg" type="image/x-icon">
+    <link rel="shortcut icon" href="/assets/files/users_default_avatars/User%20avatar-2.svg" type="image/x-icon">
 </head>
 
 <body>
