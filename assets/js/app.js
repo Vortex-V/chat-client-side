@@ -232,14 +232,11 @@ $(() => {
         this.messageView = function (data) {
             let id = data.id,
                 body = data.body,
-                timestamp = new Date(data.timestamp),
+                time = data.timestamp.time,
                 userId = data.user_id,
                 repliedTo = data.replied_to ?? null,
                 mention = data.mention ?? null,
                 files = data.files ?? null;
-
-            let h = timestamp.getHours(),
-                m = timestamp.getMinutes();
 
             let div = $('<div class="chat-message d-flex">')
                 .data({
@@ -312,7 +309,7 @@ $(() => {
                 );
 
             // Время отправки
-            rightColumn.append(`<div class="message-timestamp">${h + ':' + m}</div>`);
+            rightColumn.append(`<div class="message-timestamp">${time}</div>`);
 
 
             div.append(leftColumn, centerColumn, rightColumn);
@@ -399,22 +396,34 @@ $(() => {
                     id: this.oldestMessage ?? null,
                 }
             })
-                .done((room) => {
-                    if (typeof room === 'object') {
-                        if (room.users) {
-                            this.users = room.users;
+
+                .done(
+                    /**
+                     * @param room {{
+                     *     users: {
+                     *          id: {
+                     *              display_name: string
+                     *          }
+                     *     },
+                     *     messages: array
+                     * }}
+                     */
+                    (room) => {
+                        if (typeof room === 'object') {
+                            if (room.users) {
+                                this.users = room.users;
+                            } else {
+                                this.systemMessageView('В комнату не добавлено ни одного пользователя');
+                            }
+                            if (room.messages) {
+                                this.showMessages(room.messages);
+                            } else {
+                                this.systemMessageView('Здесь пока нет ни одного сообщения');
+                            }
                         } else {
-                            this.systemMessageView('В комнату не добавлено ни одного пользователя');
+                            this.systemMessageView('Ошибка загрузки комнаты');
                         }
-                        if (room.messages) {
-                            this.showMessages(room.messages);
-                        } else {
-                            this.systemMessageView('Здесь пока нет ни одного сообщения');
-                        }
-                    } else {
-                        this.systemMessageView('Ошибка загрузки комнаты');
-                    }
-                })
+                    })
                 .fail(() => this.systemMessageView('Ошибка загрузки комнаты'));
         }
 
@@ -426,14 +435,14 @@ $(() => {
                 }
             })
                 .done((messages) => {
-                    if (typeof messages === 'object') {
-                        console.log(messages);
-                        //this.oldestMessage = messages[0].id;
-                        this.showMessages(messages);
-                    } else {
-                        this.throwException('Ошибка на стороне сервера');
-                    }
-                });
+                        if (typeof messages === 'object') {
+                            console.log(messages);
+                            //this.oldestMessage = messages[0].id;
+                            this.showMessages(messages);
+                        } else {
+                            this.throwException('Ошибка на стороне сервера');
+                        }
+                    });
         }
 
         this.sendMessage = function () {
@@ -552,6 +561,12 @@ $(() => {
          * }|null}
          */
         let config = JSON.parse(this.attr('data-config')) ?? null;
+        /**
+         * @type {{
+         *     userId: int,
+         *     roomId: int
+         * } | object}
+         */
         let sessionData = JSON.parse(this.attr('data-session')) ?? null;
         this.removeAttr('data-config')
             .removeAttr('data-session');

@@ -20,7 +20,7 @@
             <path d="M1 1L6 3L11 1" stroke="#1E591E" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
     </div>
-    <div id="chat-wrapper">
+    <div id="chat-wrapper" class="d-flex flex-column">
         <div class="chat-message-input-region d-flex align-items-center px-2 py-1">
             <div class="d-flex align-items-center px-1">
                 <div class="chat-svg chat-plus-svg"></div>

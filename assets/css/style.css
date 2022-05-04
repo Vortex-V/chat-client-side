@@ -90,7 +90,7 @@
 /* Список сообщений и сообщение */
 
 .scrollable {
-    overflow-y: auto;
+    overflow: hidden auto;
 }
 
 .chat-message {
