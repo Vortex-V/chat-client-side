@@ -141,6 +141,18 @@
     font-size: 12px;
 }
 
+.chat-messages-date{
+    display: flex;
+    align-items: center;
+}
+
+.chat-messages-date:before, .chat-messages-date:after {
+    content: '';
+    flex: 0 0.9 100%;
+    height: 1px;
+    background-color: var(--gray);
+}
+
 .message-attached-file {
     padding-left: 10px;
     border-left: 2px #94B7DB solid;
@@ -155,15 +167,6 @@
 
 .message-link:hover {
     text-decoration: underline;
-}
-
-.system-message {
-    color: var(--gray);
-    word-break: break-word;
-}
-
-.system-message * {
-    max-width: 100%;
 }
 
 .formatted-message-text {
@@ -190,11 +193,11 @@
     fill: var(--chat-primary);
 }
 
-#chat-update-messages{
+#chat-update-messages {
     color: var(--gray-dark);
 }
 
-#chat-update-messages:hover *{
+#chat-update-messages:hover * {
     color: black;
     fill: var(--chat-primary);
 }

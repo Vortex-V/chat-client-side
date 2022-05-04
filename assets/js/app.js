@@ -206,7 +206,12 @@ $(() => {
         }
 
         this.showMessages = function (messages) {
+            let date = '';
             for (const message of messages) {
+                if (date !== message.timestamp.date){
+                    date = message.timestamp.date;
+                    this.systemMessageView(date, true);
+                }
                 if (message.user_id === 1) {
                     this.systemMessageView(message);
                 } else {
@@ -219,7 +224,10 @@ $(() => {
          * @param data {{
          *     id: int,
          *     body: string,
-         *     timestamp: string,
+         *     timestamp: {
+         *         date: string,
+         *         time: string
+         *     },
          *     user_id: int,
          *     replied_to: int | null,
          *     mention: array | int | null,
@@ -325,12 +333,13 @@ $(() => {
          * @param data {{
          *     body: string
          * } | string}
+         * @param date {boolean}
          */
-        this.systemMessageView = function (data) {
+        this.systemMessageView = function (data, date = false) {
             let body = data.body ?? data;
 
             EL.messagesList.prepend($('<div class="chat-message">')
-                .addClass('system-message text-center')
+                .addClass('text-muted text-center' + (date ? ' chat-messages-date' : ''))
                 .append(`<div class="formatted-message-text">${body}</div>`));
         }
 
