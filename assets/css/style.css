@@ -95,7 +95,13 @@
 
 .chat-message {
     margin-bottom: 1.25rem;
-    padding: .25rem;
+    padding: .3rem;
+}
+
+.chat-message:not(.system-message):hover {
+    transition-duration: .5s;
+    border-radius: 15px 5px 15px 5px;
+    background-color: var(--chat-hover);
 }
 
 .message-left-col img {
@@ -119,15 +125,8 @@
     color: var(--gray);
 }
 
-.chat-message:not(.system-message):hover {
-    transition-duration: .5s;
-    border-radius: 15px 5px 15px 5px;
-    background-color: var(--chat-hover);
-}
-
-.my-message {
-    width: 100%;
-    height: 25px;
+.chat-message.my-message:hover {
+    border-radius: 5px 15px 5px 15px;
 }
 
 .message-timestamp {

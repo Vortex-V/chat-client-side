@@ -189,7 +189,7 @@ $(() => {
         this.splitToDivs = function (text) {
             let result = [];
             for (let paragraph of text.split('\n')) {
-                result.push($(`<div>${paragraph}</div>`)[0]);
+                result.push(`<div>${paragraph}</div>`);
             }
             return result;
         }
@@ -267,6 +267,7 @@ $(() => {
                     .removeClass('justify-content-end')
                     .addClass('justify-content-between');
                 deflt = 2
+                div.addClass('my-message');
             } else {
                 target = leftColumn;
                 messageHead.text(this.users[userId].displayName + ' ');
@@ -278,7 +279,7 @@ $(() => {
             }
 
             // Является ли сообщение ответом кому-то
-            if (mention) {
+            if (mention.length) {
                 let mentionDiv;
                 if (mention.length === 1) {
                     mentionDiv = $(`<a class="message-link">${this.users[mention].display_name}</a>`);
