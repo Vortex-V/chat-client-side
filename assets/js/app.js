@@ -282,20 +282,20 @@ $(() => {
             if (mention.length) {
                 let mentionDiv;
                 if (mention.length === 1) {
-                    mentionDiv = $(`<a class="message-link">${this.users[mention].display_name}</a>`);
+                    mentionDiv = $(`<span class="message-mention">${this.users[mention[0]].displayName}</span>`);
                 } else {
                     div.data('mention', mention);
-                    mentionDiv = $(`<span class="message-mention">пользователям</span>`)
+                    mentionDiv = $(`<span class="message-link">пользователям</span>`)
                     //TODO .click();
                 }
 
-                messageHead.append($(`<div class="text-end">ответил(а) </div>`).append(mentionDiv));
+                messageHead.append($(`<div class="text-end small">ответил(а) </div>`).append(mentionDiv));
             }
 
             // Является ли ответом на сообщение
             if (repliedTo) {
                 messageHead
-                    .append($('<span>на </span>')
+                    .append($('<span class="small">на </span>')
                         .append(
                             $('<a class="message-link">сообщение</a>').attr('href', '#chat-message-' + repliedTo)
                         )
