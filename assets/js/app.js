@@ -325,9 +325,9 @@ $(() => {
             div.append(leftColumn, centerColumn, rightColumn);
 
             // Контекстное меню
-            div.contextmenu((e) => this.showContextMenu(e));
+            div.contextmenu((e) => this.showContextMenu(e, 'message'));
 
-            EL.messagesList.prepend(div);
+            EL.messagesList.prepend(div); // TODO return
         }
 
         /**
@@ -345,37 +345,38 @@ $(() => {
 
             if (date) div.addClass('chat-messages-date small')
 
-            EL.messagesList.prepend(div);
+            EL.messagesList.prepend(div); // TODO return
         }
 
-        this.showContextMenu = function (e) {
+        this.loadUsersListSide = function () {
+            let list = [];
+            for (const [id, user] of Object.entries(this.users)) {
+                list.push(
+                    $('<li class="d-flex align-items-center py-2 px-3">')
+                        .append('<div class="chat-svg chat-user-default-1 mr-2">', user.displayName)
+                        .data('id', id)
+                        .contextmenu((e) => this.showContextMenu(e, 'user'))
+                );
+            }
+            EL.usersListSide.append(list);
+        }
+
+        /**
+         * @param ids {[int]}
+         * @returns {string}
+         */
+        this.loadUsersList = function (ids) {
+            return EL.usersList;
+        }
+
+        this.showContextMenu = function (e, type) {
             e.preventDefault();
-            let messageContextMenu = EL.messageContextMenu,
-                menuEdges = {
-                    left: e.originalEvent.pageX,
-                    top: e.originalEvent.pageY,
-                },
-                chatEdges = this.offset();
-            menuEdges = Object.assign(menuEdges, {
-                right: menuEdges.left + messageContextMenu.width(),
-                bottom: menuEdges.top + messageContextMenu.height(),
-            })
+            let chatEdges = this.offset();
             chatEdges = Object.assign(chatEdges, {
                 right: chatEdges.left + this.width(),
                 bottom: chatEdges.top + this.height()
             });
-
-            // Чтобы не выходил за края
-            if (menuEdges.left < chatEdges.left) menuEdges.left += chatEdges.left - menuEdges.left;
-            if (menuEdges.right > chatEdges.right) menuEdges.left -= menuEdges.right - chatEdges.right;
-            if (menuEdges.bottom > chatEdges.bottom) menuEdges.top -= menuEdges.bottom - chatEdges.bottom;
-            messageContextMenu
-                .css({
-                    left: menuEdges.left,
-                    top: menuEdges.top,
-                })
-                .data('id', $(e.currentTarget).data('id'))
-                .show('fadeIn');
+            contextMenu(e, type, chatEdges);
         }
 
         this.addReply = function (id) {
@@ -391,13 +392,22 @@ $(() => {
         }
 
         this.addMention = function (user_id) { // TODO
-            if (!this.message.mention) this.message.mention = [];
+            let mentionBlock = EL.messageAdditional.mention
+            if (!this.message.mention) {
+                this.message.mention = [];
+                mentionBlock
+                    .text('пользователю ')
+                    .append(
+                        $(`<span class="message-mention">${this.users[user_id].displayName}</span>`)
+                    );
+            } else if(!this.message.mention.includes(user_id)) {
+                mentionBlock
+                    .empty()
+                    .hide()
+                    .append(`в ответ <span class="message-mention">пользователям</span>`); //TODO click
+            }
             this.message.mention.push(user_id);
-            let mention = EL.messageAdditional.mention;
-            mention.text('пользователю ')
-                .append(
-                    $('<span class="message-mention"></span>').text(this.users[user_id].displayName)
-                );
+            mentionBlock.slideDown(200);
         }
 
 
@@ -496,7 +506,7 @@ $(() => {
         // END FUNCTIONS
 
 
-        // ELEMENTS & CONSTANTS
+        // OBJECTS
 
         const EL = this.elements({
             topPanel: 'top-panel',
@@ -513,6 +523,13 @@ $(() => {
                 }
             ],
             messagesList: 'messages-list',
+            usersContextMenu: [
+                'users-contextmenu',
+                {
+                    mention: 'user-mention'
+                }
+            ],
+            usersListSide: 'users-list-side',
             showUsersList: 'show-users-list',
             updateMessages: 'update-messages',
             messageContextMenu: [
@@ -526,7 +543,56 @@ $(() => {
         EL.topPanel.allowClick = true;
         EL.messageAdditional.opened = false;
 
-        // END ELEMENTS & CONSTANTS
+
+        /**
+         * Отобразит контекстное меню указанного типа
+         * @param e
+         * @param type {'message'|'user'}
+         * @param chatEdges {{
+         *     left: int,
+         *     right: int,
+         *     bottom: int,
+         *     top: int
+         * }}
+         */
+        let contextMenu = function (e, type, chatEdges) { // TODO подумать над структурой
+            contextMenu[type](e, chatEdges);
+        }
+
+        contextMenu.setPosition = function (e, menu, chatEdges) {
+            let edges = {
+                left: e.originalEvent.pageX,
+                top: e.originalEvent.pageY,
+            };
+            edges = Object.assign(edges, {
+                right: edges.left + menu.width(),
+                bottom: edges.top + menu.height(),
+            })
+
+            // Чтобы не выходил за края
+            if (edges.left < chatEdges.left) edges.left += chatEdges.left - edges.left;
+            if (edges.right > chatEdges.right) edges.left -= edges.right - chatEdges.right;
+            if (edges.bottom > chatEdges.bottom) edges.top -= edges.bottom - chatEdges.bottom;
+            return menu
+                .css({
+                    left: edges.left,
+                    top: edges.top,
+                })
+        }
+
+        contextMenu.user = function (e, chatEdges) {
+            this.setPosition(e, EL.usersContextMenu, chatEdges)
+                .data('id', $(e.currentTarget).data('id'))
+                .show('fadeIn');
+        }
+
+        contextMenu.message = function (e, chatEdges) {
+            this.setPosition(e, EL.messageContextMenu, chatEdges)
+                .data('id', $(e.currentTarget).data('id'))
+                .show('fadeIn');
+        }
+
+        // OBJECTS
 
 
         // EVENTS
@@ -548,6 +614,13 @@ $(() => {
             })
             .reply.click(() => this.addReply(messageContextMenu.data('id')));
 
+        let usersContextMenu = EL.usersContextMenu;
+        usersContextMenu
+            .mouseleave(() => {
+                usersContextMenu.hide('slideDown');
+            })
+            .mention.click(() => this.addMention(usersContextMenu.data('id')));
+
         let messageAdditional = EL.messageAdditional;
         messageAdditional
             .on('hasAdditions', () => { // TODO возможно бессмысленно
@@ -561,7 +634,9 @@ $(() => {
                     .opened = false;
             });
 
-
+        EL.showUsersList
+            .click(() => EL.usersListSide.toggleClass('showed'))
+            .one('click', () => this.loadUsersListSide());
         // LOAD
 
         /**

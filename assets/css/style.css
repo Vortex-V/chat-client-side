@@ -6,18 +6,18 @@
 }
 
 #chat {
-    width: 360px;
+    width: 320px;
     transition-timing-function: cubic-bezier(.1, .57, .21, .98);
     transition-duration: 0.5s;
     background-color: var(--chat-bg);
     z-index: 100;
+    overflow: hidden;
 }
 
 #chat.closed {
     height: 25px;
     top: auto !important;
     bottom: 0 !important;
-    overflow: hidden;
 }
 
 #chat-wrapper {
@@ -133,7 +133,7 @@
     font-size: 12px;
 }
 
-.chat-messages-date{
+.chat-messages-date {
     display: flex;
     align-items: center;
 }
@@ -175,6 +175,22 @@
 }
 
 
+/* Список пользователей */
+
+#chat-users-list-side {
+    top: 0;
+    left: -100%;
+    transition-timing-function: cubic-bezier(.1, .57, .21, .98);
+    transition-duration: 0.5s;
+    height: 100%;
+    background-color: inherit;
+}
+
+#chat-users-list-side.showed {
+    left: 0;
+}
+
+
 /* Нижняя панель */
 
 #chat-bottom-panel {
@@ -195,6 +211,7 @@
     fill: var(--chat-primary);
 }
 
+
 /* Контекстные меню */
 
 #chat .chat-context-menu {
@@ -203,19 +220,18 @@
     list-style: none;
 }
 
-#chat-message-contextmenu {
-    transform-origin: left;
+.chat-context-menu > * {
+    min-width: 200px;
 }
 
-#chat-message-contextmenu > * {
-    min-width: 250px;
-}
-
-#chat-message-contextmenu > *:hover {
+.chat-context-menu > *:hover, #chat-users-list-side > *:hover {
     background-color: var(--chat-hover);
     cursor: default;
 }
 
+#chat-message-contextmenu {
+    transform-origin: left;
+}
 
 /* SVG */
 
@@ -238,10 +254,4 @@
 .chat-user-default-2 {
     width: 25px;
     background-image: url('../files/users_default_avatars/User avatar-2.svg');
-}
-
-/* Будет сохранён в JS */
-
-.chat-block-pattern {
-    display: none !important;
 }

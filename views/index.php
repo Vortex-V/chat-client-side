@@ -20,7 +20,7 @@
             <path d="M1 1L6 3L11 1" stroke="#1E591E" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
     </div>
-    <div id="chat-wrapper" class="d-flex flex-column">
+    <div id="chat-wrapper" class="d-flex flex-column position-relative">
         <div class="chat-message-input-region d-flex align-items-center px-2 py-1">
             <div class="d-flex align-items-center px-1">
                 <div class="chat-svg chat-plus-svg"></div>
@@ -65,6 +65,7 @@
                 </div>
             </div>
         </div>
+        <div id="chat-users-list-side" class="position-absolute"></div>
     </div>
     <div id="chat-bottom-panel" class="d-flex justify-content-between align-items-center user-select-none p-2">
         <div id="chat-show-users-list" class="d-flex align-items-center px-1" title="Показать участников">
@@ -81,12 +82,14 @@
             </svg>
         </div>
     </div>
+    <ul id="chat-users-list" class="chat-context-menu py-2 px-0 m-0 position-fixed" style="display: none">
+        <li class="chat-block-pattern d-flex py-2 px-4">
+        </li>
+    </ul>
     <ul id="chat-message-contextmenu" class="chat-context-menu py-2 px-0 m-0 position-fixed" style="display: none">
         <li id="chat-message-reply" class="py-2 px-4">Ответить</li>
     </ul>
-    <ul id="chat-users-list" class="chat-context-menu py-2 px-0 m-0 position-fixed" style="display: none">
-        <li class="chat-block-pattern d-flex py-2 px-4">
-            <img src="#" alt="user" class="mr-2">
-        </li>
+    <ul id="chat-users-contextmenu" class="chat-context-menu py-2 px-0 m-0 position-fixed" style="display: none">
+        <li id="chat-user-mention" class="py-2 px-4">Ответить</li>
     </ul>
 </div>
