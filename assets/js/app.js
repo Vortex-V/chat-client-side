@@ -205,18 +205,47 @@ $(() => {
             EL.messageTextArea.height(EL.textAreaHeight.height());
         }
 
+        /**
+         * Допишет в список сообщений переданные сообщения
+         * @param messages
+         */
         this.showMessages = function (messages) {
-            let date = '';
-            for (const message of messages) {
+            let date = '',
+                currentDate = (new Date()).toDateString(),
+                list = [];
+            for (const message of messages.reverse()) {
                 if (date !== message.timestamp.date) {
                     date = message.timestamp.date;
-                    this.systemMessageView(date, true);
+                    if ((new Date(date)).toDateString() !== currentDate) { // TODO перенести проверку
+                        list.push(this.systemMessageView(date, true));
+                    }
                 }
                 if (message.user_id === 1) {
-                    this.systemMessageView(message);
+                    list.push(this.systemMessageView(message));
                 } else {
-                    this.messageView(message);
+                    list.push(this.messageView(message));
                 }
+            }
+            EL.messagesList.append(list);
+        }
+
+        /**
+         * Допишет сообщение в список
+         * @param data
+         * @param insertMethod {'prepend'|'append'}
+         * @param type {'system'|''}
+         */
+        this.showMessage = function (data, insertMethod, type = '') {
+            let message;
+            if (type === 'system'){
+                message = this.systemMessageView(data);
+            } else {
+                message = this.messageView(data);
+            }
+            if (insertMethod === 'prepend') {
+                EL.messagesList.prepend(message);
+            } else if (insertMethod === 'append') {
+                EL.messagesList.append(message);
             }
         }
 
@@ -327,7 +356,7 @@ $(() => {
             // Контекстное меню
             div.contextmenu((e) => this.showContextMenu(e, 'message'));
 
-            EL.messagesList.prepend(div); // TODO return
+            return div;
         }
 
         /**
@@ -345,7 +374,7 @@ $(() => {
 
             if (date) div.addClass('chat-messages-date small')
 
-            EL.messagesList.prepend(div); // TODO return
+            return div;
         }
 
         this.loadUsersListSide = function () {
@@ -400,7 +429,7 @@ $(() => {
                     .append(
                         $(`<span class="message-mention">${this.users[user_id].displayName}</span>`)
                     );
-            } else if(!this.message.mention.includes(user_id)) {
+            } else if (!this.message.mention.includes(user_id)) {
                 mentionBlock
                     .empty()
                     .hide()
@@ -437,18 +466,18 @@ $(() => {
                             if (room.users) {
                                 this.users = room.users;
                             } else {
-                                this.systemMessageView('В комнату не добавлено ни одного пользователя');
+                                this.showMessage('В комнату не добавлено ни одного пользователя', "prepend", "system");
                             }
                             if (room.messages) {
                                 this.showMessages(room.messages);
                             } else {
-                                this.systemMessageView('Здесь пока нет ни одного сообщения');
+                                this.showMessage('Здесь пока нет ни одного сообщения', "prepend", "system");
                             }
                         } else {
-                            this.systemMessageView('Ошибка загрузки комнаты');
+                            this.showMessage('Ошибка загрузки комнаты', "prepend", "system");
                         }
                     })
-                .fail(() => this.systemMessageView('Ошибка загрузки комнаты'));
+                .fail(() => this.showMessage('Ошибка загрузки комнаты', "prepend", "system"));
         }
 
         this.getRoomMessages = function () {
@@ -477,13 +506,16 @@ $(() => {
                         body: body
                     }), POST)
                     .done((message) => {
-                        this.messageView(message);
+                        this.showMessage(message, "prepend");
                         EL.messageTextArea.val('');
                         EL.messageTextArea.height(EL.textAreaHeight.children()
                             .empty()
                             .height());
                         this.message = {};
                         EL.messageAdditional.reply
+                            .empty()
+                            .hide();
+                        EL.messageAdditional.mention
                             .empty()
                             .hide();
                     });
@@ -494,7 +526,7 @@ $(() => {
             chatAjax('/updateMessages')
                 .done((messages) => {
                     if (typeof messages === 'object') {
-                        this.showMessages(messages);
+                        this.showMessages(messages); // TODO prepend
                     } else {
                         this.throwException('Ошибка на стороне сервера');
                     }

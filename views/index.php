@@ -46,7 +46,7 @@
         </div>
         <div class="p-2 scrollable">
             <div id="chat-messages-list" class="d-flex flex-column align-content-center w-100">
-                <div class="chat-message justify-content-end d-flex"><!--FROM ME & FILE-->
+           <!--     <div class="chat-message justify-content-end d-flex">
                     <div class="message-left-col"></div>
                     <div class="d-flex flex-column flex-fill mx-1 message-center-col">
                         <div class="d-flex flex-wrap message-head"></div>
@@ -62,7 +62,7 @@
                         <div class="my-message">Я</div>
                         <div class="d-flex align-self-end message-timestamp">9:01</div>
                     </div>
-                </div>
+                </div>-->
             </div>
         </div>
         <div id="chat-users-list-side" class="position-absolute"></div>
