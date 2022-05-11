@@ -2,6 +2,7 @@
 /**
  * @var array $config
  * @var array $session
+ * @var string $apiUrl
  */
 ?>
 <div id="chat"
@@ -14,6 +15,7 @@
     ?>
      data-config='<?= json_encode($config) ?>'
      data-session='<?= json_encode($session) ?>'
+     data-api-url='<?= $apiUrl ?>'
      style="display: none">
     <div id="chat-top-panel" class="justify-content-center align-items-center" style="display: none">
         <svg width="12" height="4" viewBox="0 0 12 4" fill="none" xmlns="http://www.w3.org/2000/svg">

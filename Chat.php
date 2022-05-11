@@ -2,6 +2,8 @@
 
 namespace vortex_v\chat_widget;
 
+use Cassandra\Exception\ConfigurationException;
+
 class Chat
 {
     /**
@@ -17,6 +19,11 @@ class Chat
      * @var string
      */
     public $apiUrl;
+
+    /**
+     * @var int
+     */
+    public $getMessagesLimit;
 
     /**
      * @var array|int
@@ -54,20 +61,27 @@ class Chat
     {
         return [
             'dev',
-            'apiUrl',
+            'headers', // TODO
+            'getMessagesLimit',
+            'updateMessages',
             'css',
             'draggable',
             'foldable',
-            'updateMessages',
         ];
     }
 
-    public function __construct($config = null)
+    public function __construct($config)
     {
-        if (isset($config)) {
-            $vars = get_class_vars(self::class);
-            foreach ($config as $item => $value) {
-                if (array_key_exists($item, $vars)) {
+        if (isset($config['apiUrl']) && isset($config['session'])){
+            $this->apiUrl = $config['apiUrl'];
+            $this->session = $config['session'];
+        } else {
+            throw new ConfigurationException('Параметры apiUrl и session обязательны', 400, '');
+        }
+        if (isset($config['config'])) {
+            $vars = self::varsForConfig();
+            foreach ($config['config'] as $item => $value) {
+                if (is_int(array_search($item, $vars))) {
                     $this->$item = $value;
                 }
             }
@@ -87,6 +101,7 @@ class Chat
         $params = [
             'config' => [],
             'session' => $this->session,
+            'apiUrl' => $this->apiUrl,
         ];
         foreach (self::varsForConfig() as $var) {
             if (isset($this->$var)) {
@@ -96,12 +111,11 @@ class Chat
         return $params;
     }
 
-    public static function widget($config = null)
+    public static function widget($config)
     {
-        $chat = (new static($config ?? null))->getParams();
         ob_start();
         //ob_implicit_flush(false);
-        extract($chat);
+        extract((new static($config))->getParams());
         require 'views/index.php';
         return ob_get_clean();
     }

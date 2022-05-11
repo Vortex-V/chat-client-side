@@ -22,13 +22,16 @@ require_once __DIR__ . '/vendor/' . 'autoload.php';
 <?php
 try {
     echo Chat::widget([
-        'css' => [
-            'right' => 10,
-            'bottom' => 10,
+        'config' => [
+            'css' => [
+                'right' => 10,
+                'bottom' => 10,
+            ],
+            'dev' => true,
+            'draggable' => true,
+            'getMessagesLimit' => 50
         ],
         'apiUrl' => 'http://api.chat.local',
-        'dev' => true,
-        'draggable' => true,
         'session' => [
             'userId' => 2,
             'roomId' => 1,
