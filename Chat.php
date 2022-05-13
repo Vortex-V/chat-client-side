@@ -2,7 +2,7 @@
 
 namespace vortex_v\chat_widget;
 
-use Cassandra\Exception\ConfigurationException;
+use Error;
 
 class Chat
 {
@@ -76,7 +76,7 @@ class Chat
             $this->apiUrl = $config['apiUrl'];
             $this->session = $config['session'];
         } else {
-            throw new ConfigurationException('Параметры apiUrl и session обязательны', 400, '');
+            throw new Error('Параметры apiUrl и session обязательны', 500);
         }
         if (isset($config['config'])) {
             $vars = self::varsForConfig();

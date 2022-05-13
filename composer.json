@@ -8,7 +8,6 @@
   "require": {
     "php": ">=7.1",
     "ext-json": "*",
-    "ext-cassandra": "*",
     "npm-asset/bootstrap": "^4.3",
     "bower-asset/jquery": "~3.2.1",
     "bower-asset/jquery-ui": "~1.12.1"
