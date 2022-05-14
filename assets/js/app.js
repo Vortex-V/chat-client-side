@@ -6,15 +6,19 @@ let Chat = function () {
     let chat = this,
         params = {
             apiUrl: null,
-            session: {
-                userId: null,
-                roomId: null
-            },
+            httpHeaders: null,
+            /**
+             * @type session {{
+             *     userId: int,
+             *     roomId: int
+             * }}
+             */
+            session: null,
             users: null,
             message: {},
             oldestMessage: null,
             lastMessage: null,
-            getMessagesLimit: 1000,
+            loadMessagesLimit: 1000,
         };
 
     (function elements() {
@@ -216,7 +220,7 @@ let Chat = function () {
          * @param insertMethod {'prepend'|'append'}
          * @param type {'user'|'system'|'date'}
          */
-        chat.showMessage = function (data, insertMethod = 'append', type = 'user'){
+        chat.showMessage = function (data, insertMethod = 'append', type = 'user') {
             EL.messagesList[insertMethod](chat.messageOne(data, type));
         }
 
@@ -349,8 +353,10 @@ let Chat = function () {
          */
         let config = chat.data('config');
         if (config) {
-            if (config.getMessagesLimit) {
-                chat.getMessagesLimit = config.getMessagesLimit;
+            for (const param in params) {
+                if (config[param]) {
+                    chat[param] = config[param];
+                }
             }
 
             if (config.draggable) {

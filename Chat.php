@@ -23,7 +23,7 @@ class Chat
     /**
      * @var int
      */
-    public $getMessagesLimit;
+    public $loadMessagesLimit;
 
     /**
      * @var array|int
@@ -61,8 +61,8 @@ class Chat
     {
         return [
             'dev',
-            'headers', // TODO
-            'getMessagesLimit',
+            'httpHeaders',
+            'loadMessagesLimit',
             'updateMessages',
             'css',
             'draggable',

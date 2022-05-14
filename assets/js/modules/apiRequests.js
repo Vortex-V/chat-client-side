@@ -12,12 +12,13 @@ export default function (chat) {
             method: method,
             contentType: 'application/json',
         };
+        if (chat.httpHeaders) options.headers = chat.httpHeaders;
         let defaults = {
             room_id: chat.session.roomId,
             user_id: chat.session.userId
         }
         data ?
-            data = Object.assign(defaults, data)
+            $.extend(data, defaults)
             : data = defaults;
         method === "GET" ?
             options.data = data
@@ -32,7 +33,7 @@ export default function (chat) {
         getRoom: function () {
             ajax('/room', {
                 params: {
-                    limit: chat.getMessagesLimit,
+                    limit: chat.loadMessagesLimit,
                 }
             })
                 .done(
@@ -55,7 +56,7 @@ export default function (chat) {
                             }
                             if (room.messages) {
                                 chat.last_id = room.messages[0].id;
-                                chat.oldest_id = room.messages[room.messages.length-1].id;
+                                chat.oldest_id = room.messages[room.messages.length - 1].id;
                                 chat.showMessages(room.messages);
                             } else {
                                 chat.showMessage('Здесь пока нет ни одного сообщения', "prepend", "system");
@@ -69,7 +70,7 @@ export default function (chat) {
         loadMoreMessages: function () {
             ajax('/roomMessages', {
                 params: {
-                    limit: chat.getMessagesLimit,
+                    limit: chat.loadMessagesLimit,
                     last_id: chat.lastMessage ?? null,
                     oldest_id: chat.oldestMessage ?? null,
                 }
@@ -77,7 +78,7 @@ export default function (chat) {
                 .done((messages) => {
                     if (typeof messages === 'object') {
                         console.log(messages);
-                        chat.oldest_id = messages[messages.length-1].id;
+                        chat.oldest_id = messages[messages.length - 1].id;
                         chat.showMessages(messages);
                     } else {
                         throw new Error('Ошибка на стороне сервера');
