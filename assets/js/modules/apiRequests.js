@@ -67,7 +67,7 @@ export default function (chat) {
                     })
                 .fail(() => chat.showMessage('Ошибка загрузки комнаты', "prepend", "system"));
         },
-        loadMoreMessages: function () {
+        loadMoreMessages: function () { // TODO объединить с updateMessages
             ajax('/roomMessages', {
                 params: {
                     limit: chat.loadMessagesLimit,

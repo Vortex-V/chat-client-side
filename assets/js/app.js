@@ -314,7 +314,11 @@ let Chat = function () {
             .mention.click(() => chat.addMention(usersContextMenu.data('id')));
 
         EL.showUsersList
-            .click(() => EL.usersListSide.toggleClass('showed'))
+            .click(() => {
+                EL.usersListSide
+                    .toggleClass('showed')
+                EL.showUsersList.children().toggle();
+            })
             .one('click', () => chat.loadUsersListSide());
     })();
 

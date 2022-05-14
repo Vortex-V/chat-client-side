@@ -182,6 +182,7 @@
     left: -100%;
     transition-timing-function: cubic-bezier(.1, .57, .21, .98);
     transition-duration: 0.5s;
+    width: 100%;
     height: 100%;
     background-color: inherit;
 }
@@ -236,22 +237,24 @@
 /* SVG */
 
 .chat-svg {
-    width: 15px;
-    height: 25px;
     background-position: center;
     background-repeat: no-repeat;
 }
 
 .chat-plus-svg {
+    width: 15px;
+    height: 25px;
     background-image: url('../files/plus.svg');
 }
 
 .chat-user-default-1 {
     width: 25px;
+    height: 25px;
     background-image: url('../files/users_default_avatars/User avatar-1.svg');
 }
 
 .chat-user-default-2 {
     width: 25px;
+    height: 25px;
     background-image: url('../files/users_default_avatars/User avatar-2.svg');
 }

@@ -72,15 +72,21 @@
     <div id="chat-bottom-panel" class="d-flex justify-content-between align-items-center user-select-none p-2">
         <div id="chat-show-users-list" class="d-flex align-items-center px-1" title="Показать участников">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="var(--gray)"
-                 class="bi bi-person-lines-fill" viewBox="0 0 16 16">
+                 style="display: none"
+                 viewBox="-2 -2 20 20">
+                <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/>
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="var(--gray)"
+                 viewBox="0 0 16 16">
                 <path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-5 6s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zM11 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5zm.5 2.5a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1h-4zm2 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1h-2zm0 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1h-2z"/>
             </svg>
         </div>
         <div id="chat-update-messages" class="align-items-center px-1" style="display: none">
             <span class="small mr-1">Обновить</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="var(--gray)" class="bi bi-arrow-repeat" viewBox="0 0 16 16">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="var(--gray)" viewBox="0 0 16 16">
                 <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/>
-                <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/>
+                <path fill-rule="evenodd"
+                      d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/>
             </svg>
         </div>
     </div>
