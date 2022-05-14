@@ -43,7 +43,7 @@ try {
 ?>
 <script src="/vendor/bower-asset/jquery/dist/jquery.min.js"></script>
 <script src="/vendor/bower-asset/jquery-ui/jquery-ui.min.js"></script>
-<script src="/assets/js/app.js"></script>
+<script type="module" src="/assets/js/app.js"></script>
 </body>
 
 </html>
