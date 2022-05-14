@@ -26,7 +26,7 @@ class Chat
     public $loadMessagesLimit;
 
     /**
-     * @var array|int
+     * @var array|string
      */
     public $updateMessages;
     const UPDATE_MANUALLY = 'manually'; // default

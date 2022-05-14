@@ -71,15 +71,31 @@ export default function (chat) {
             ajax('/roomMessages', {
                 params: {
                     limit: chat.loadMessagesLimit,
-                    last_id: chat.lastMessage ?? null,
-                    oldest_id: chat.oldestMessage ?? null,
+                    oldest_id: chat.oldest_id ?? null,
                 }
             })
                 .done((messages) => {
                     if (typeof messages === 'object') {
-                        console.log(messages);
                         chat.oldest_id = messages[messages.length - 1].id;
                         chat.showMessages(messages);
+                    } else {
+                        throw new Error('Ошибка на стороне сервера');
+                    }
+                });
+        },
+        updateMessages: function () {
+            ajax('/roomMessages', {
+                params: {
+                    limit: chat.loadMessagesLimit,
+                    last_id: chat.last_id,
+                }
+            })
+                .done((messages) => {
+                    if (typeof messages === 'object') {
+                        if (messages.length){
+                            chat.last_id = messages[0].id;
+                            chat.showMessages(messages, 'prepend');
+                        }
                     } else {
                         throw new Error('Ошибка на стороне сервера');
                     }
@@ -109,16 +125,5 @@ export default function (chat) {
                     });
             }
         },
-        updateMessages: function () {
-            ajax('/updateMessages')
-                .done((messages) => {
-                    if (typeof messages === 'object') {
-                        chat.last_id = messages[0].id;
-                        chat.showMessages(messages, 'prepend');
-                    } else {
-                        throw new Error('Ошибка на стороне сервера');
-                    }
-                });
-        }
     };
 }

@@ -161,24 +161,30 @@ let Chat = function () {
         /**
          * @param data {{
          *     type: 'manually'|'automatically',
-         *     interval: int | null
+         *     timeout: int | null
          * } | 'manually'}
          */
         chat.setMessagesUpdateMethod = function (data) {
+            let type = data.type ?? data,
+                timeout = data.timeout ?? 5000;
+            let click = () => {
+                chat.updateMessages();
+                setTimeout(() => {
+                    EL.updateMessages.one('click', click)
+                }, timeout);
+            }
             let methods = {
                 manually: () => {
                     EL.updateMessages
-                        .click(() => chat.updateMessages())
+                        .one('click', click)
                         .addClass('d-flex')
                         .show()
                 },
-                automatically: (interval) => setInterval(() => {
+                automatically: () => setInterval(() => {
                     chat.updateMessages();
-                }, interval),
+                }, timeout),
             };
-            let type = data.type ?? data,
-                interval = data.interval ?? 5000;
-            if (Object.keys(methods).includes(type)) methods[type](interval);
+            if (Object.keys(methods).includes(type)) methods[type]();
         }
 
         /**
