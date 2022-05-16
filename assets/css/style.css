@@ -154,7 +154,12 @@
 
 .message-mention, .message-reply, .message-link {
     color: var(--blue);
+    cursor: pointer;
     text-decoration: none;
+}
+
+.message-mention:hover {
+    color: var(--chat-primary);
 }
 
 .message-link:hover {
@@ -219,10 +224,7 @@
     border-top: 2px var(--chat-primary) solid;
     background-color: var(--chat-bg);
     list-style: none;
-}
-
-.chat-context-menu > * {
-    min-width: 200px;
+    white-space: nowrap;
 }
 
 .chat-context-menu > *:hover, #chat-users-list-side > *:hover {

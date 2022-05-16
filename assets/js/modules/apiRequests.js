@@ -41,7 +41,8 @@ export default function (chat) {
                      * @param room {{
                      *     users: {
                      *          id: {
-                     *              display_name: string
+                     *              id: int,
+                     *              displayName: string
                      *          }
                      *     },
                      *     messages: array

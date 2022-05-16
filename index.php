@@ -29,7 +29,7 @@ try {
             ],
             'dev' => true,
             'draggable' => true,
-            'loadMessagesLimit' => 1000
+            'loadMessagesLimit' => 10
         ],
         'apiUrl' => 'http://api.chat.local',
         'session' => [
