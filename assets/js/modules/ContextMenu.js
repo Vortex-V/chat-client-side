@@ -35,16 +35,16 @@ export default function (chat) {
         }
     }
 
-    /**
-     * Отобразит контекстное меню указанного типа
-     * @param e
-     * @param type {'message'|'user'}
-     */
-    ContextMenu.show = function (e, type) {
-        (new ContextMenu)[type](e)
-            .data('id', $(e.currentTarget).data('id'))
-            .show('fadeIn');
-    }
-
-    return {contextMenu: ContextMenu.show};
+    return {
+        /**
+         * Отобразит контекстное меню указанного типа
+         * @param e
+         * @param type {'message'|'user'}
+         */
+        contextMenu: function (e, type) {
+            (new ContextMenu)[type](e)
+                .data('id', $(e.currentTarget).data('id'))
+                .show('fadeIn');
+        }
+    };
 }

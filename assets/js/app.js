@@ -168,7 +168,7 @@ let Chat = function () {
             let type = data.type ?? data,
                 timeout = data.timeout ?? 5000;
             let click = () => {
-                chat.updateMessages();
+                chat.loadMessages('prepend');
                 setTimeout(() => {
                     EL.updateMessages.one('click', click)
                 }, timeout);

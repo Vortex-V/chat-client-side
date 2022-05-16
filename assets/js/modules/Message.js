@@ -1,5 +1,8 @@
 export default function (chat) {
     let Message = function () {
+        this.types = ['user', 'system', 'date'];
+        this.currentDate = (new Date()).toDateString();
+
         this.user = function (data) {
             let id = data.id,
                 body = data.body,
@@ -118,53 +121,47 @@ export default function (chat) {
         }
     }
 
-    Message.types = ['user', 'system', 'date'];
-    Message.currentDate = (new Date()).toDateString();
-
-    /**
-     *
-     * @param message {{
-     *     id: int,
-     *     body: string,
-     *     timestamp: {
-     *         date: string,
-     *         time: string
-     *     },
-     *     user_id: int,
-     *     replied_to: int | null,
-     *     mention: array | null,
-     *     files: [{
-     *          id: string,
-     *          name: string|null,
-     *      }] | null
-     * }}
-     * @param type {'user'|'system'|'date'}
-     */
-    Message.getOne = function (message, type = 'user') {
-        if (this.types.includes(type)) {
-            return (new Message)[type](message);
-        }
-    }
-
-    Message.collection = function (messages) {
-        let date = messages[0].timestamp.date,
-            list = [];
-        for (const message of messages) {
-            if (date !== message.timestamp.date && (new Date(date)).toDateString() !== Message.currentDate) {
-                date = message.timestamp.date;
-                list.push(Message.getOne(date, 'date'));
-            }
-            if (message.user_id === 1) {
-                list.push(Message.getOne(message, 'system'));
-            } else {
-                list.push(Message.getOne(message));
-            }
-        }
-        return list;
-    }
-
     return {
-        messageOne: Message.getOne,
-        messageCollection: Message.collection
+        /**
+         *
+         * @param data {{
+         *     id: int,
+         *     body: string,
+         *     timestamp: {
+         *         date: string,
+         *         time: string
+         *     },
+         *     user_id: int,
+         *     replied_to: int | null,
+         *     mention: array | null,
+         *     files: [{
+         *          id: string,
+         *          name: string|null,
+         *      }] | null
+         * }}
+         * @param type {'user'|'system'|'date'}
+         */
+        messageOne: function (data, type = 'user') {
+            let message = new Message();
+            if (message.types.includes(type)) {
+                return message[type](data);
+            }
+        },
+        messageCollection: function (messages) {
+            let date = messages[0].timestamp.date,
+                list = [];
+            for (const message of messages) {
+                if (date !== message.timestamp.date && (new Date(date)).toDateString() !== Message.currentDate) {
+                    date = message.timestamp.date;
+                    list.push(chat.messageOne(date, 'date'));
+                }
+                if (message.user_id === 1) {
+                    list.push(chat.messageOne(message, 'system'));
+                } else {
+                    list.push(chat.messageOne(message));
+                }
+            }
+            return list;
+        }
     };
 }

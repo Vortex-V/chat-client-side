@@ -67,39 +67,41 @@ export default function (chat) {
                     })
                 .fail(() => chat.showMessage('Ошибка загрузки комнаты', "prepend", "system"));
         },
-        loadMoreMessages: function () { // TODO объединить с updateMessages
+        /**
+         * @param insertMethod {'prepend'|'append'}
+         */
+        loadMessages: function (insertMethod) {
+            /**
+             * @type {{
+             *      limit: int,
+             *      last_id: int|null,
+             *      oldest_id: int|null,
+             * }}
+             */
+            let params = {
+                limit: chat.loadMessagesLimit,
+            };
+            /**
+             * @type {'last_id'|'oldest_id'}
+             */
+            let paramName;
+            if (insertMethod === "prepend") {
+                params.last_id = chat.last_id;
+                paramName = 'last_id';
+            } else if (insertMethod === 'append') {
+                params.oldest_id = chat.oldest_id;
+                paramName = 'oldest_id';
+            }
             ajax('/roomMessages', {
-                params: {
-                    limit: chat.loadMessagesLimit,
-                    oldest_id: chat.oldest_id ?? null,
+                params: params,
+            }).done((messages) => {
+                if (typeof messages === 'object') {
+                    chat[paramName] = messages[paramName === 'last_id' ? 0 : messages.length - 1].id;
+                    chat.showMessages(messages, insertMethod);
+                } else {
+                    throw new Error('Ошибка на стороне сервера');
                 }
             })
-                .done((messages) => {
-                    if (typeof messages === 'object') {
-                        chat.oldest_id = messages[messages.length - 1].id;
-                        chat.showMessages(messages);
-                    } else {
-                        throw new Error('Ошибка на стороне сервера');
-                    }
-                });
-        },
-        updateMessages: function () {
-            ajax('/roomMessages', {
-                params: {
-                    limit: chat.loadMessagesLimit,
-                    last_id: chat.last_id,
-                }
-            })
-                .done((messages) => {
-                    if (typeof messages === 'object') {
-                        if (messages.length){
-                            chat.last_id = messages[0].id;
-                            chat.showMessages(messages, 'prepend');
-                        }
-                    } else {
-                        throw new Error('Ошибка на стороне сервера');
-                    }
-                });
         },
         sendMessage: function () {
             let body = EL.messageTextArea.val();
