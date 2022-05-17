@@ -90,14 +90,5 @@
             </svg>
         </div>
     </div>
-    <ul id="chat-users-list" class="chat-context-menu py-2 px-0 m-0 position-fixed" style="display: none">
-        <li class="chat-block-pattern d-flex py-2 px-4">
-        </li>
-    </ul>
-    <ul id="chat-message-contextmenu" class="chat-context-menu py-2 px-0 m-0 position-fixed" style="display: none">
-        <li id="chat-message-reply" class="py-2 px-4">Ответить</li>
-    </ul>
-    <ul id="chat-users-contextmenu" class="chat-context-menu py-2 px-0 m-0 position-fixed" style="display: none">
-        <li id="chat-user-mention" class="py-2 px-4">Ответить</li>
-    </ul>
+    <ul id="chat-contextmenu" class="chat-context-menu py-2 px-0 m-0 position-fixed" style="display: none"></ul>
 </div>

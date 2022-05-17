@@ -50,9 +50,8 @@ export default function (chat) {
                 if (mention.length === 1) {
                     mentionDiv = $(`<span class="message-mention">${chat.users[mention[0]].displayName}</span>`);
                 } else {
-                    div.data('mention', mention);
-                    mentionDiv = $(`<span class="message-link">пользователям</span>`)
-                    //TODO .click();
+                    mentionDiv = $(`<span class="message-mention">пользователям</span>`)
+                        .click((e) => chat.ContextMenu(e, 'users', mention))
                 }
 
                 messageHead.append($(`<div class="text-end small">ответил(а) </div>`).append(mentionDiv));
@@ -88,10 +87,8 @@ export default function (chat) {
             rightColumn.append(`<div class="message-timestamp">${time}</div>`);
 
 
-            div.append(leftColumn, centerColumn, rightColumn);
-
-            // Контекстное меню
-            div.contextmenu((e) => chat.showContextMenu(e, 'message'));
+            div.append(leftColumn, centerColumn, rightColumn)
+                .contextmenu((e) => chat.ContextMenu(e, 'actions', ['reply']));
 
             return div[0];
         }

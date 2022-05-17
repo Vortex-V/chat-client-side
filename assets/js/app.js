@@ -14,6 +14,14 @@ let Chat = function () {
              * }}
              */
             session: null,
+            /**
+             * @type {{
+             *      id: {
+             *         id: int,
+             *         displayName: string
+             *     }
+             * }}
+             */
             users: null,
             message: {},
             oldestMessage: null,
@@ -84,21 +92,10 @@ let Chat = function () {
             }
         ],
         messagesList: 'messages-list',
-        usersContextMenu: [
-            'users-contextmenu',
-            {
-                mention: 'user-mention'
-            }
-        ],
+        contextMenu: 'contextmenu',
         usersListSide: 'users-list-side',
         showUsersList: 'show-users-list',
         updateMessages: 'update-messages',
-        messageContextMenu: [
-            'message-contextmenu',
-            {
-                reply: 'message-reply',
-            },
-        ]
     });
 
     (function functions() {
@@ -237,25 +234,26 @@ let Chat = function () {
                     $('<li class="d-flex align-items-center py-2 px-3">')
                         .append('<div class="chat-svg chat-user-default-1 mr-2">', user.displayName)
                         .data('id', id)
-                        .contextmenu((e) => chat.showContextMenu(e, 'user'))
+                        .contextmenu((e) => chat.ContextMenu(e, 'actions', ['mention']))
                 );
             }
             EL.usersListSide.append(list);
         }
 
         /**
-         * @param ids {[int]}
-         * @returns {string}
+         * @deprecated
+         * @param e
+         * @param type
          */
-        chat.loadUsersList = function (ids) {
-            return EL.usersList;
-        }
-
         chat.showContextMenu = function (e, type) {
             e.preventDefault();
-            chat.contextMenu(e, type);
+            chat.ContextMenu(e, type);
         }
 
+        /**
+         * @deprecated
+         * @param id
+         */
         chat.addReply = function (id) {
             chat.message.replied_to = id;
             EL.messageAdditional.reply
@@ -268,6 +266,10 @@ let Chat = function () {
                 .slideDown(200);
         }
 
+        /**
+         * @deprecated
+         * @param user_id
+         */
         chat.addMention = function (user_id) { // TODO
             let mentionBlock = EL.messageAdditional.mention
             if (!chat.message.mention) {
@@ -298,20 +300,6 @@ let Chat = function () {
             });
 
         EL.buttonSendMessage.click(() => chat.sendMessage());
-
-        let messageContextMenu = EL.messageContextMenu;
-        messageContextMenu
-            .mouseleave(() => {
-                messageContextMenu.hide('slideDown');
-            })
-            .reply.click(() => chat.addReply(messageContextMenu.data('id')));
-
-        let usersContextMenu = EL.usersContextMenu;
-        usersContextMenu
-            .mouseleave(() => {
-                usersContextMenu.hide('slideDown');
-            })
-            .mention.click(() => chat.addMention(usersContextMenu.data('id')));
 
         EL.showUsersList
             .click(() => {
