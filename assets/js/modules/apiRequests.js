@@ -24,48 +24,47 @@ export default function (chat) {
             options.data = data
             : options.data = JSON.stringify(data);
         return $.ajax(chat.apiUrl + query, options)
-            .fail((response) => {
-                console.log(response);
+            .fail((jqXHR) => {
+                console.log(jqXHR.responseJSON)
             });
     }
 
     return {
         getRoom: function () {
-            ajax('/room', {
+            return ajax('/room', {
                 params: {
                     limit: chat.loadMessagesLimit,
                 }
-            })
-                .done(
-                    /**
-                     * @param room {{
-                     *     users: {
-                     *          id: {
-                     *              id: int,
-                     *              displayName: string
-                     *          }
-                     *     },
-                     *     messages: array
-                     * }}
-                     */
-                    (room) => {
-                        if (typeof room === 'object') {
-                            if (room.users) {
-                                chat.users = room.users;
-                            } else {
-                                chat.showMessage('В комнату не добавлено ни одного пользователя', "prepend", "system");
-                            }
-                            if (room.messages) {
-                                chat.last_id = room.messages[0].id;
-                                chat.oldest_id = room.messages[room.messages.length - 1].id;
-                                chat.showMessages(room.messages);
-                            } else {
-                                chat.showMessage('Здесь пока нет ни одного сообщения', "prepend", "system");
-                            }
+            }).done(
+                /**
+                 * @param room {{
+                 *     users: {
+                 *          id: {
+                 *              id: int,
+                 *              displayName: string
+                 *          }
+                 *     },
+                 *     messages: array
+                 * }}
+                 */
+                (room) => {
+                    if (typeof room === 'object') {
+                        if (room.users && Object.keys(room.users).length) {
+                            chat.users = room.users;
                         } else {
-                            chat.showMessage('Ошибка загрузки комнаты', "prepend", "system");
+                            chat.showMessage('В комнату не добавлено ни одного пользователя', "prepend", "system");
                         }
-                    })
+                        if (room.messages.length) {
+                            chat.last_id = room.messages[0].id;
+                            chat.oldest_id = room.messages[room.messages.length - 1].id;
+                            chat.showMessages(room.messages);
+                        } else {
+                            chat.showMessage('Здесь пока нет ни одного сообщения', "prepend", "system");
+                        }
+                    } else {
+                        chat.showMessage('Ошибка загрузки комнаты', "prepend", "system");
+                    }
+                })
                 .fail(() => chat.showMessage('Ошибка загрузки комнаты', "prepend", "system"));
         },
         /**

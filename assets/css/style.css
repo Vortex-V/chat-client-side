@@ -25,6 +25,20 @@
     background-color: inherit;
 }
 
+@keyframes chat-loading-animation {
+    0% {
+        filter: blur(3px) saturate(0);
+    }
+    100% {
+        filter: blur(3px) saturate(.5);
+    }
+}
+
+.chat-loading {
+    pointer-events: none;
+    animation: chat-loading-animation 1s ease-out alternate infinite;
+}
+
 #chat.ui-draggable-dragging {
     box-shadow: 2px 3px 9px 3px #0000006b;
 }

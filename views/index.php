@@ -90,5 +90,6 @@
             </svg>
         </div>
     </div>
+    <div id="chat-loading" class="position-absolute" style="display: none"></div>
     <ul id="chat-contextmenu" class="chat-context-menu py-2 px-0 m-0 position-fixed" style="display: none"></ul>
 </div>

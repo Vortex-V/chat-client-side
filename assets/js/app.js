@@ -29,53 +29,51 @@ let Chat = function () {
             loadMessagesLimit: 1000,
         };
 
-    (function elements() {
-        /**
-         * Осуществляет поиск и сохранение JQuery объектов элементов окна чата
-         * @param elements {{
-         *              name:'DOM object id',
-         *              name: [
-         *                  'DOM object id',
-         *                  {
-         *                      elements
-         *                  }
-         *              ]
-         *          } | null}
-         *
-         * @param path {object | null}
-         * @returns {object} Список полученных элементов
-         */
-        let elements = chat.elements = function (elements = null, path = null) {
-            if (!chat.elements.list) chat.elements.list = {};
-            if (elements) {
-                for (let [name, val] of Object.entries(elements)) {
-                    if (typeof val === 'string') chat.elements.addElement(name, val, path);
-                    else {
-                        chat.elements(
-                            val[1],
-                            chat.elements.addElement(name, val[0], path)
-                        );
-                    }
+    /**
+     * Осуществляет поиск и сохранение JQuery объектов элементов окна чата
+     * @param elements {{
+     *              name:'DOM object id',
+     *              name: [
+     *                  'DOM object id',
+     *                  {
+     *                      elements
+     *                  }
+     *              ]
+     *          } | null}
+     *
+     * @param path {object | null}
+     * @returns {object} Список полученных элементов
+     */
+    let elements = chat.elements = function (elements = null, path = null) {
+        if (!chat.elements.list) chat.elements.list = {};
+        if (elements) {
+            for (let [name, val] of Object.entries(elements)) {
+                if (typeof val === 'string') chat.elements.addElement(name, val, path);
+                else {
+                    chat.elements(
+                        val[1],
+                        chat.elements.addElement(name, val[0], path)
+                    );
                 }
             }
-            return chat.elements.list
-        };
-
-        /**
-         *
-         * @param name
-         * @param id
-         * @param path
-         * @returns {jQuery}
-         */
-        elements.addElement = function (name, id, path = null) {
-            let element = $('#chat-' + id);
-            let list = path ?? chat.elements.list;
-            if (element.length) {
-                return list[name] = element;
-            }
         }
-    })();
+        return chat.elements.list
+    };
+
+    /**
+     *
+     * @param name
+     * @param id
+     * @param path
+     * @returns {jQuery}
+     */
+    elements.addElement = function (name, id, path = null) {
+        let element = $('#chat-' + id);
+        let list = path ?? chat.elements.list;
+        if (element.length) {
+            return list[name] = element;
+        }
+    }
 
     const EL = chat.elements({
         topPanel: 'top-panel',
@@ -96,9 +94,19 @@ let Chat = function () {
         usersListSide: 'users-list-side',
         showUsersList: 'show-users-list',
         updateMessages: 'update-messages',
+        loading: 'loading',
     });
 
-    (function functions() {
+    (function chatFunctions() {
+        /**
+         * @param el
+         * @param set
+         */
+        chat.setLoading = function (set, el = chat) {
+            el.toggleClass('chat-loading', set)
+            return chat;
+        }
+
         chat.setDraggable = function () {
             let topPanel = EL.topPanel;
             chat.css({
@@ -227,19 +235,6 @@ let Chat = function () {
             EL.messagesList[insertMethod](chat.messageOne(data, type));
         }
 
-        chat.loadUsersListSide = function () {
-            let list = [];
-            for (const [id, user] of Object.entries(chat.users)) {
-                list.push(
-                    $('<li class="d-flex align-items-center py-2 px-3">')
-                        .append('<div class="chat-svg chat-user-default-1 mr-2">', user.displayName)
-                        .data('id', id)
-                        .contextmenu((e) => chat.ContextMenu(e, 'actions', ['mention']))
-                );
-            }
-            EL.usersListSide.append(list);
-        }
-
         /**
          * @deprecated
          * @param e
@@ -249,65 +244,6 @@ let Chat = function () {
             e.preventDefault();
             chat.ContextMenu(e, type);
         }
-
-        /**
-         * @deprecated
-         * @param id
-         */
-        chat.addReply = function (id) {
-            chat.message.replied_to = id;
-            EL.messageAdditional.reply
-                .empty()
-                .hide()
-                .text('В ответ на ')
-                .append(
-                    $('<a class="message-link">сообщение</a>').attr('href', '#chat-message-' + id)
-                )
-                .slideDown(200);
-        }
-
-        /**
-         * @deprecated
-         * @param user_id
-         */
-        chat.addMention = function (user_id) { // TODO
-            let mentionBlock = EL.messageAdditional.mention
-            if (!chat.message.mention) {
-                chat.message.mention = [];
-                mentionBlock
-                    .text('пользователю ')
-                    .append(
-                        $(`<span class="message-mention">${chat.users[user_id].displayName}</span>`)
-                    );
-            } else if (!chat.message.mention.includes(user_id)) {
-                mentionBlock
-                    .empty()
-                    .hide()
-                    .append(`в ответ <span class="message-mention">пользователям</span>`); //TODO click
-            }
-            chat.message.mention.push(user_id);
-            mentionBlock.slideDown(200);
-        }
-    })();
-
-    (function events() {
-        EL.messageTextArea
-            .on('input', () => chat.updateFieldHeight())
-            .keydown((e) => {  /* Отправляет сообщение на Ctrl+Enter TODO: сделать комбинацию клавиш настриваемой */
-                if (e.key === 'Enter' && e.ctrlKey) {
-                    chat.sendMessage();
-                }
-            });
-
-        EL.buttonSendMessage.click(() => chat.sendMessage());
-
-        EL.showUsersList
-            .click(() => {
-                EL.usersListSide
-                    .toggleClass('showed')
-                EL.showUsersList.children().toggle();
-            })
-            .one('click', () => chat.loadUsersListSide());
     })();
 
     (function load() {
@@ -372,10 +308,44 @@ let Chat = function () {
             if (config.dev) window.chat = chat;
         }
 
-        chat.show()
-            .updateFieldHeight(); //Чтобы не стёртый ранее текст из поля ввода сообщения влиял на высоту блока ввода после обновления страницы
+        chat.setLoading(true, EL.wrapper)
+            .show()
+            .getRoom()
+            .done(function setEvents() {
+                EL.messageTextArea
+                    .on('input', () => chat.updateFieldHeight())
+                    .keydown((e) => {  /* Отправляет сообщение на Ctrl+Enter TODO: сделать комбинацию клавиш настриваемой */
+                        if (e.key === 'Enter' && e.ctrlKey) {
+                            chat.sendMessage();
+                        }
+                    });
 
-        chat.getRoom();
+                EL.buttonSendMessage.click(() => chat.sendMessage());
+
+                EL.showUsersList
+                    .click(() => {
+                        EL.usersListSide.toggleClass('showed')
+                        EL.showUsersList.children().toggle();
+                    })
+                    .one('click', () => {
+                        chat.setLoading(true, EL.usersListSide);
+                        let list = [];
+                        for (const [id, user] of Object.entries(chat.users)) {
+                            list.push(
+                                $('<li class="d-flex align-items-center py-2 px-3">')
+                                    .append('<div class="chat-svg chat-user-default-1 mr-2">', user.displayName)
+                                    .data('id', id)
+                                    .contextmenu((e) => chat.ContextMenu(e, 'actions', ['mention']))
+                            );
+                        }
+                        EL.usersListSide.append(list);
+                        chat.setLoading(false, EL.usersListSide);
+                    });
+            })
+            .always(() => {
+                chat.setLoading(false, EL.wrapper);
+            })
+        chat.updateFieldHeight() //Чтобы не стёртый ранее текст из поля ввода сообщения влиял на высоту блока ввода после обновления страницы
     })();
 }
 
