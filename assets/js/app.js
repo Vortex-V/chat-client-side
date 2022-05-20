@@ -1,6 +1,7 @@
-import ContextMenu from "./modules/ContextMenu.js";
+import Menu from "./modules/Menu.js";
 import apiRequests from "./modules/apiRequests.js";
 import Message from "./modules/Message.js";
+import UserSearch from "./modules/UserSearch.js";
 
 let Chat = function () {
     let chat = this,
@@ -234,24 +235,15 @@ let Chat = function () {
         chat.showMessage = function (data, insertMethod = 'append', type = 'user') {
             EL.messagesList[insertMethod](chat.messageOne(data, type));
         }
-
-        /**
-         * @deprecated
-         * @param e
-         * @param type
-         */
-        chat.showContextMenu = function (e, type) {
-            e.preventDefault();
-            chat.ContextMenu(e, type);
-        }
     })();
 
     (function load() {
         let modules = [];
         for (let module of [
             apiRequests,
-            ContextMenu,
-            Message
+            Menu,
+            Message,
+            UserSearch
         ]) {
             modules.push(module(chat));
         }
@@ -335,7 +327,7 @@ let Chat = function () {
                                 $('<li class="d-flex align-items-center py-2 px-3">')
                                     .append('<div class="chat-svg chat-user-default-1 mr-2">', user.displayName)
                                     .data('id', id)
-                                    .contextmenu((e) => chat.ContextMenu(e, 'actions', ['mention']))
+                                    .contextmenu((e) => chat.showContextMenu(e, 'actions', ['mention']))
                             );
                         }
                         EL.usersListSide.append(list);
@@ -346,6 +338,30 @@ let Chat = function () {
                 chat.setLoading(false, EL.wrapper);
             })
         chat.updateFieldHeight() //Чтобы не стёртый ранее текст из поля ввода сообщения влиял на высоту блока ввода после обновления страницы
+        chat.initUserSearch({
+            result: (e, result) => {
+                console.log(result);
+                if (result.length) {
+                    let messageTextArea = EL.messageTextArea;
+                    let parent = messageTextArea.parents('.chat-message-input-region');
+                    (new chat.Menu())
+                        .users(result, true)
+                        .click(() => {
+                            chat.completeUserSearch();
+                            EL.contextMenu.slideUp();
+                        })
+                        .css({
+                            left: messageTextArea.offset().left,
+                            top: parent.offset().top + parent[0].clientHeight
+                        })
+                        .slideDown(200);
+                }
+            },
+            end: () => {
+                console.log('end');
+                EL.contextMenu.slideUp();
+            }
+        });
     })();
 }
 

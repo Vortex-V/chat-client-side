@@ -1,7 +1,7 @@
 export default function (chat) {
     const EL = chat.elements.list;
 
-    let ContextMenu = function (e) {
+    let Menu = function (e = null) {
         let menu = this;
 
         menu.empty();
@@ -39,7 +39,7 @@ export default function (chat) {
                             .append(
                                 'в ответ',
                                 $('<span class="message-mention"> пользователям</span>')
-                                    .click((e) => chat.ContextMenu(e, 'users', chat.message.mention))
+                                    .click((e) => chat.showContextMenu(e, 'users', chat.message.mention))
                             );
                     } else {
                         return;
@@ -64,25 +64,29 @@ export default function (chat) {
                         menu.actionList[action].fu(id)
                     }));
             }
-            return menu.append(list)
-                .setPosition();
+            return menu.append(list);
         };
 
         /**
          * @param ids {int[]}
+         * @param action {boolean}
          * @returns {*}
          */
-        menu.users = function (ids) {
+        menu.users = function (ids, action = false) {
             let list = [];
             for (const id of ids) {
-                list.push($(menu.liPattern)
-                    .append('<div class="chat-svg d-inline-block chat-user-default-1 mr-2">', chat.users[id].displayName)); // TODO аватарка
+                let item = $(menu.liPattern)
+                    .append('<div class="chat-svg d-inline-block chat-user-default-1 mr-2">', chat.users[id].displayName) // TODO аватарка
+                    .data('id', id);
+                if (action) item.click(() => menu.actionList.mention.fu(id));
+
+                list.push(item);
             }
-            return menu.append(list)
-                .setPosition();
+
+            return menu.append(list);
         }
 
-        menu.setPosition = function () {
+        menu.cursorPos = function () {
             let chatEdges = chat.offset();
             $.extend(chatEdges, {
                 right: chatEdges.left + chat.width(),
@@ -107,26 +111,27 @@ export default function (chat) {
             });
             return menu;
         }
-
-        menu
-            .mouseleave(() => {
-                menu.hide('slideDown');
-            });
     }
 
-    ContextMenu.prototype = EL.contextMenu;
+    Menu.prototype = EL.contextMenu;
+
 
     return {
+        Menu: Menu,
         /**
          * Отобразит контекстное меню указанного типа
          * @param e
          * @param type {'actions'|'users'}
          * @param data {int[]|string[]}
          */
-        ContextMenu: function (e, type, data) {
+        showContextMenu: function (e, type, data) {
             e.preventDefault();
-            (new ContextMenu(e))[type](data)
-                .show('fadeIn');
+            (new Menu(e))[type](data)
+                .cursorPos()
+                .show('fadeIn')
+                .mouseleave(() => {
+                    EL.contextMenu.hide('slideDown');
+                });
         },
     };
 }
