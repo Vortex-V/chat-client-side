@@ -130,7 +130,7 @@ export default function (chat) {
                 .cursorPos()
                 .show('fadeIn')
                 .mouseleave(() => {
-                    menu.hide('slideDown');
+                    EL.contextMenu.hide('slideDown');
                 });
         },
     };
