@@ -96,7 +96,7 @@
     box-shadow: 0 3px 5px 0 #223C5033;
 }
 
-#chat-message-additional * {
+#chat-message-additional > * {
     min-width: 100%;
 }
 
@@ -261,6 +261,13 @@
     width: 15px;
     height: 25px;
     background-image: url('../files/plus.svg');
+}
+
+.chat-x-svg {
+    width: 20px;
+    height: 20px;
+    background-image: url('../files/x.svg');
+    background-size: 1rem;
 }
 
 .chat-user-default-1 {

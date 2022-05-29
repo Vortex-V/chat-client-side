@@ -107,23 +107,13 @@ export default function (chat) {
             let body = EL.messageTextArea.val();
             if (body) {
                 ajax('/sendMessage',
-                    Object.assign(chat.message, {
+                    Object.assign(chat.Message.obj, {
                         body: body
                     }), "POST")
                     .done((message) => {
                         chat.last_id = message.id;
                         chat.showMessage(message, "prepend");
-                        EL.messageTextArea.val('');
-                        EL.messageTextArea.height(EL.textAreaHeight.children()
-                            .empty()
-                            .height());
-                        chat.message = {};
-                        EL.messageAdditional.reply
-                            .empty()
-                            .hide();
-                        EL.messageAdditional.mention
-                            .empty()
-                            .hide();
+                        chat.Message.afterSend();
                     });
             }
         },

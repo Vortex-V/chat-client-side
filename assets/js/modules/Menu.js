@@ -4,51 +4,23 @@ export default function (chat) {
     let Menu = function (e = null) {
         let menu = this;
 
-        menu.empty();
-        menu.liPattern = '<li class="d-flex align-items-center py-2 px-4">';
-        menu.actionList = {
-            reply: {
-                label: 'Ответить',
-                fu: function (id) {
-                    chat.message.replied_to = id;
-                    EL.messageAdditional.reply
-                        .empty()
-                        .hide()
-                        .text('В ответ на ')
-                        .append(
-                            $('<a class="message-link">сообщение</a>').attr('href', '#chat-message-' + id)
-                        )
-                        .slideDown(200);
-                },
-            },
-            mention: {
-                label: 'Ответить',
-                fu: function (id) {
-                    let mentionBlock = EL.messageAdditional.mention;
-                    if (!chat.message.mention) {
-                        chat.message.mention = [];
-                        mentionBlock
-                            .text('пользователю ')
-                            .append(
-                                $(`<span class="message-mention">${chat.users[id].displayName}</span>`)
-                            );
-                    } else if (!chat.message.mention.includes(id)) {
-                        mentionBlock
-                            .empty()
-                            .hide()
-                            .append(
-                                'в ответ',
-                                $('<span class="message-mention"> пользователям</span>')
-                                    .click((e) => chat.showContextMenu(e, 'users', chat.message.mention))
-                            );
-                    } else {
-                        return;
-                    }
-                    chat.message.mention.push(id);
-                    mentionBlock.slideDown(200);
+        menu.empty()
+            .extend(
+                {
+                    liPattern: '<li class="d-flex align-items-center py-2 px-4">',
+                    actionList: {
+                        reply: {
+                            label: 'Ответить',
+                            fu: chat.Message.addReply,
+                        },
+                        mention: {
+                            label: 'Ответить',
+                            fu: chat.Message.addMention,
+                        }
+                    },
                 }
-            }
-        };
+            );
+
 
         /**
          * @param actions {string[]}
@@ -69,20 +41,18 @@ export default function (chat) {
 
         /**
          * @param ids {int[]}
-         * @param action {boolean}
+         * @param action {function}
          * @returns {*}
          */
-        menu.users = function (ids, action = false) {
+        menu.users = function (ids, action = null) {
             let list = [];
             for (const id of ids) {
-                let item = $(menu.liPattern)
+                list.push($(menu.liPattern)
+                    .addClass('chat-user-in-list')
                     .append('<div class="chat-svg d-inline-block chat-user-default-1 mr-2">', chat.users[id].displayName) // TODO аватарка
-                    .data('id', id);
-                if (action) item.click(() => menu.actionList.mention.fu(id));
-
-                list.push(item);
+                    .data('id', id)[0]);
             }
-
+            if (action) action(menu, list);
             return menu.append(list);
         }
 
@@ -119,14 +89,15 @@ export default function (chat) {
     return {
         Menu: Menu,
         /**
-         * Отобразит контекстное меню указанного типа
+         * Отобразит меню указанного типа
          * @param e
          * @param type {'actions'|'users'}
          * @param data {int[]|string[]}
+         * @param action {function|null}
          */
-        showContextMenu: function (e, type, data) {
+        showMenu: function (e, type, data, action = null) {
             e.preventDefault();
-            (new Menu(e))[type](data)
+            (new Menu(e))[type](data, action)
                 .cursorPos()
                 .show('fadeIn')
                 .mouseleave(() => {

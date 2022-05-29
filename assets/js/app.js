@@ -1,5 +1,6 @@
 import Menu from "./modules/Menu.js";
 import apiRequests from "./modules/apiRequests.js";
+import MessageView from "./modules/MessageView.js";
 import Message from "./modules/Message.js";
 import UserSearch from "./modules/UserSearch.js";
 
@@ -9,7 +10,7 @@ let Chat = function () {
             apiUrl: null,
             httpHeaders: null,
             /**
-             * @type session {{
+             * @type {{
              *     userId: int,
              *     roomId: int
              * }}
@@ -24,7 +25,6 @@ let Chat = function () {
              * }}
              */
             users: null,
-            message: {},
             oldestMessage: null,
             lastMessage: null,
             loadMessagesLimit: 1000,
@@ -95,7 +95,6 @@ let Chat = function () {
         usersListSide: 'users-list-side',
         showUsersList: 'show-users-list',
         updateMessages: 'update-messages',
-        loading: 'loading',
     });
 
     (function chatFunctions() {
@@ -242,13 +241,13 @@ let Chat = function () {
         for (let module of [
             apiRequests,
             Menu,
+            MessageView,
             Message,
             UserSearch
         ]) {
             modules.push(module(chat));
         }
         $.extend(chat, params, ...modules);
-        console.log(chat);
 
         chat.apiUrl = chat.data('api-url');
         if (!chat.apiUrl) {
@@ -327,41 +326,43 @@ let Chat = function () {
                                 $('<li class="d-flex align-items-center py-2 px-3">')
                                     .append('<div class="chat-svg chat-user-default-1 mr-2">', user.displayName)
                                     .data('id', id)
-                                    .contextmenu((e) => chat.showContextMenu(e, 'actions', ['mention']))
+                                    .contextmenu((e) => chat.showMenu(e, 'actions', ['mention']))
                             );
                         }
                         EL.usersListSide.append(list);
                         chat.setLoading(false, EL.usersListSide);
                     });
+
+                chat.initMessageForSend();
+
+                chat.initUserSearch({ // TODO функции внутрь перенести
+                    result: (e, result) => {
+                        if (result.length) {
+                            let messageTextArea = EL.messageTextArea;
+                            let parent = messageTextArea.parents('.chat-message-input-region');
+                            (new chat.Menu())
+                                .users(result, () => {
+                                        chat.on('click', '.chat-user-in-list',
+                                            (e) => menu.actionList.mention.fu($(e.currentTarget).data('id')))
+                                            .completeUserSearch();
+                                        EL.contextMenu.slideUp();
+                                    }
+                                )
+                                .css({
+                                    left: messageTextArea.offset().left,
+                                    top: parent.offset().top + parent[0].clientHeight
+                                })
+                                .slideDown(200);
+                        }
+                    },
+                    end: () => EL.contextMenu.slideUp()
+                });
             })
             .always(() => {
                 chat.setLoading(false, EL.wrapper);
             })
         chat.updateFieldHeight() //Чтобы не стёртый ранее текст из поля ввода сообщения влиял на высоту блока ввода после обновления страницы
-        chat.initUserSearch({
-            result: (e, result) => {
-                console.log(result);
-                if (result.length) {
-                    let messageTextArea = EL.messageTextArea;
-                    let parent = messageTextArea.parents('.chat-message-input-region');
-                    (new chat.Menu())
-                        .users(result, true)
-                        .click(() => {
-                            chat.completeUserSearch();
-                            EL.contextMenu.slideUp();
-                        })
-                        .css({
-                            left: messageTextArea.offset().left,
-                            top: parent.offset().top + parent[0].clientHeight
-                        })
-                        .slideDown(200);
-                }
-            },
-            end: () => {
-                console.log('end');
-                EL.contextMenu.slideUp();
-            }
-        });
+
     })();
 }
 
