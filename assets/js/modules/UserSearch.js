@@ -65,10 +65,8 @@ export default function (chat) {
                 action = -1;
             }
             let patternEnd = search.patternPosition + search.pattern.length;
-            console.log(search.patternPosition, patternEnd, search.lastAdded, search.lastDeleted, lastPosition);
             if (lastPosition >= search.patternPosition && lastPosition <= patternEnd) {
                 search.pattern = search.val().slice(search.patternPosition, patternEnd + action);
-                console.log(search.pattern);
                 search.findByPattern();
             } else if (lastPosition <= search.patternPosition) {
                 search.patternPosition += action;
@@ -97,7 +95,6 @@ export default function (chat) {
             if (search.lastInput === '@') {
                 let inputPosition = search.getLastAddedPosition();
                 let str = search.val().slice(inputPosition - 1, inputPosition)
-                console.log(search.lastAdded, str === '' || str === ' ', str);
                 if (str === '' || str === ' ') {
                     search.patternPosition = parseInt(inputPosition) + 1;
                     search.on('input', search.find)
@@ -123,7 +120,6 @@ export default function (chat) {
 
     return {
         initUserSearch: function ({result: fn1, end: fn2}) {
-            console.log(fn1, fn2);
             UserSearch.obj = (new UserSearch)
                 .on('chat.userSearch.result', fn1)
                 .on('chat.userSearch.end', fn2);

@@ -41,7 +41,7 @@
                 </svg>
             </div>
         </div>
-        <div id="chat-message-additional" class="d-flex flex-column px-4" style="display: none">
+        <div id="chat-message-additional" class="d-flex flex-column px-4">
             <div id="chat-message-additional-file" class="my-1" style="display: none"></div>
             <div id="chat-message-additional-reply" class="my-1" style="display: none"></div>
             <div id="chat-message-additional-mention" class="my-1" style="display: none"></div>
@@ -90,6 +90,5 @@
             </svg>
         </div>
     </div>
-    <div id="chat-loading" class="position-absolute" style="display: none"></div>
     <ul id="chat-contextmenu" class="chat-context-menu py-2 px-0 m-0 position-fixed" style="display: none"></ul>
 </div>
