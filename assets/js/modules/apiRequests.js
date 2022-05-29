@@ -55,8 +55,8 @@ export default function (chat) {
                             chat.showMessage('В комнату не добавлено ни одного пользователя', "prepend", "system");
                         }
                         if (room.messages.length) {
-                            chat.last_id = room.messages[0].id;
-                            chat.oldest_id = room.messages[room.messages.length - 1].id;
+                            chat.lastMessage = room.messages[0].id;
+                            chat.oldestMessage = room.messages[room.messages.length - 1].id;
                             chat.showMessages(room.messages);
                         } else {
                             chat.showMessage('Здесь пока нет ни одного сообщения', "prepend", "system");
@@ -86,17 +86,17 @@ export default function (chat) {
              */
             let paramName;
             if (insertMethod === "prepend") {
-                params.last_id = chat.last_id;
-                paramName = 'last_id';
+                params.last_id = chat.lastMessage;
+                paramName = 'lastMessage';
             } else if (insertMethod === 'append') {
-                params.oldest_id = chat.oldest_id;
-                paramName = 'oldest_id';
+                params.oldest_id = chat.oldestMessage;
+                paramName = 'oldestMessage';
             }
-            ajax('/roomMessages', {
+            return ajax('/roomMessages', {
                 params: params,
             }).done((messages) => {
                 if (typeof messages === 'object') {
-                    chat[paramName] = messages[paramName === 'last_id' ? 0 : messages.length - 1].id;
+                    chat[paramName] = messages[paramName === 'lastMessage' ? 0 : messages.length - 1].id;
                     chat.showMessages(messages, insertMethod);
                 } else {
                     throw new Error('Ошибка на стороне сервера');
@@ -111,7 +111,7 @@ export default function (chat) {
                         body: body
                     }), "POST")
                     .done((message) => {
-                        chat.last_id = message.id;
+                        chat.lastMessage = message.id;
                         chat.showMessage(message, "prepend");
                         chat.Message.afterSend();
                     });

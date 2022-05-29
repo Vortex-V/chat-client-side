@@ -313,6 +313,15 @@ let Chat = function () {
 
                 EL.buttonSendMessage.click(() => chat.sendMessage());
 
+                let wait = false;
+                EL.messagesList.parent('.scrollable').on('scroll', e => {
+                    let el = e.currentTarget;
+                    if (el.scrollTop + 200 >= el.scrollTopMax && !wait) {
+                        wait = true;
+                        chat.loadMessages('append').done(() => wait = false);
+                    }
+                });
+
                 EL.showUsersList
                     .click(() => {
                         EL.usersListSide.toggleClass('showed')
