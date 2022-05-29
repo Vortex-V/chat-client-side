@@ -87,7 +87,9 @@ export default function (chat) {
 
 
     return {
-        Menu: Menu,
+        Menu: function (e = null) {
+            return new Menu(e);
+        },
         /**
          * Отобразит меню указанного типа
          * @param e

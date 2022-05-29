@@ -111,6 +111,14 @@ export default function (chat) {
             search.trigger('chat.userSearch.end');
         }
 
+        search.finishPattern = function (text) {
+            let val = search.val();
+            val = Array.from(val);
+            val.splice(search.patternPosition - 1, search.patternPosition + search.pattern.length + 1, text);
+            console.log(val);
+            search.val(val.join(''));
+        }
+
         search.on('input', search.checkStart)
     }
 
@@ -119,13 +127,30 @@ export default function (chat) {
     UserSearch.obj = null;
 
     return {
-        initUserSearch: function ({result: fn1, end: fn2}) {
+        initUserSearch: function () {
             UserSearch.obj = (new UserSearch)
-                .on('chat.userSearch.result', fn1)
-                .on('chat.userSearch.end', fn2);
+                .on('chat.userSearch.result', (e, result) => {
+                    if (result.length) {
+                        let messageTextArea = EL.messageTextArea;
+                        let parent = messageTextArea.parents('.chat-message-input-region');
+                        chat.Menu()
+                            .users(result)
+                            .css({
+                                left: messageTextArea.offset().left,
+                                top: parent.offset().top + parent[0].clientHeight
+                            })
+                            .slideDown(200);
+                    }
+                })
+                .on('chat.userSearch.end', () => EL.contextMenu.slideUp());
+
+            chat.on('click', '.chat-user-in-list', (e) => {
+                let el = $(e.currentTarget);
+                chat.Message.addMention(el.data('id'));
+                UserSearch.obj.finishPattern(el.text());
+                UserSearch.obj.end();
+                EL.contextMenu.slideUp();
+            })
         },
-        completeUserSearch: function () {
-            if (UserSearch.obj) UserSearch.obj.end();
-        }
     };
 }

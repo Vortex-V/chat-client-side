@@ -334,29 +334,7 @@ let Chat = function () {
                     });
 
                 chat.initMessageForSend();
-
-                chat.initUserSearch({ // TODO функции внутрь перенести
-                    result: (e, result) => {
-                        if (result.length) {
-                            let messageTextArea = EL.messageTextArea;
-                            let parent = messageTextArea.parents('.chat-message-input-region');
-                            (new chat.Menu())
-                                .users(result, () => {
-                                        chat.on('click', '.chat-user-in-list',
-                                            (e) => menu.actionList.mention.fu($(e.currentTarget).data('id')))
-                                            .completeUserSearch();
-                                        EL.contextMenu.slideUp();
-                                    }
-                                )
-                                .css({
-                                    left: messageTextArea.offset().left,
-                                    top: parent.offset().top + parent[0].clientHeight
-                                })
-                                .slideDown(200);
-                        }
-                    },
-                    end: () => EL.contextMenu.slideUp()
-                });
+                chat.initUserSearch();
             })
             .always(() => {
                 chat.setLoading(false, EL.wrapper);
