@@ -135,6 +135,7 @@ export default function (chat) {
                         let parent = messageTextArea.parents('.chat-message-input-region');
                         chat.Menu()
                             .users(result)
+                            .addClass('search-result')
                             .css({
                                 left: messageTextArea.offset().left,
                                 top: parent.offset().top + parent[0].clientHeight
@@ -144,7 +145,7 @@ export default function (chat) {
                 })
                 .on('chat.userSearch.end', () => EL.contextMenu.slideUp());
 
-            chat.on('click', '.chat-user-in-list', (e) => {
+            chat.on('click', '.search-result .chat-user-in-list', (e) => {
                 let el = $(e.currentTarget);
                 chat.Message.addMention(el.data('id'));
                 UserSearch.obj.finishPattern(el.text());

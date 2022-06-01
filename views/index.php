@@ -24,9 +24,9 @@
     </div>
     <div id="chat-wrapper" class="d-flex flex-column position-relative">
         <div class="chat-message-input-region d-flex align-items-center px-2 py-1">
-            <div class="d-flex align-items-center px-1">
+<!--            <div class="d-flex align-items-center px-1">
                 <div class="chat-svg chat-plus-svg"></div>
-            </div>
+            </div>-->
             <div class="d-flex justify-content-center position-relative flex-fill">
                 <textarea id="chat-message-textarea" placeholder="Ваше сообщение..."></textarea>
                 <div id="chat-textarea-height" class="position-absolute formatted-message-text">
