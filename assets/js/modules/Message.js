@@ -56,7 +56,8 @@ export default function (chat) {
             mentionBlock.empty().hide()
                 .append(
                     'в ответ ',
-                    '<span class="message-mention chat-mention">пользователям</span>'
+                    '<span class="message-mention chat-mention">пользователям</span>',
+                    '<div class="chat-delete-mention chat-svg chat-x-svg float-right"></div>'
                 );
         } else {
             return;
@@ -78,13 +79,15 @@ export default function (chat) {
             mentionBlock.empty().hide()
                 .append(
                     'в ответ ',
-                    '<span class="message-mention chat-mention">пользователям</span>'
+                    '<span class="message-mention chat-mention">пользователям</span>',
+                    '<div class="chat-delete-mention chat-svg chat-x-svg float-right"></div>'
                 );
         } else if (mention.length) {
             mentionBlock.empty().hide()
                 .append(
                     'пользователю ',
-                    `<span class="message-mention">${chat.users[mention[0]].displayName}</span>`
+                    `<span class="message-mention">${chat.users[mention[0]].displayName}</span>`,
+                    '<div class="chat-delete-mention chat-svg chat-x-svg float-right"></div>'
                 );
         } else {
             mentionBlock.empty().hide();

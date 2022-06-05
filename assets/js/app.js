@@ -316,9 +316,13 @@ let Chat = function () {
                 let wait = false;
                 EL.messagesList.parent('.scrollable').on('scroll', e => {
                     let el = e.currentTarget;
-                    if (el.scrollTop + 200 >= el.scrollTopMax && !wait) {
+                    if (el.scrollTop + 400 >= el.scrollTopMax && !wait) {
                         wait = true;
-                        chat.loadMessages('append').done(() => wait = false);
+                        chat.setLoading(true, EL.wrapper);
+                        chat.loadMessages('append').done(() => {
+                            wait = false;
+                            chat.setLoading(false, EL.wrapper);
+                        });
                     }
                 });
 

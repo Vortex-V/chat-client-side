@@ -95,7 +95,7 @@ export default function (chat) {
             return ajax('/roomMessages', {
                 params: params,
             }).done((messages) => {
-                if (typeof messages === 'object') {
+                if (typeof messages === 'object' && messages.length) {
                     chat[paramName] = messages[paramName === 'lastMessage' ? 0 : messages.length - 1].id;
                     chat.showMessages(messages, insertMethod);
                 } else {
