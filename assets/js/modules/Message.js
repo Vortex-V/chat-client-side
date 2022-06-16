@@ -95,6 +95,21 @@ export default function (chat) {
         mentionBlock.slideDown(200);
     }
 
+    Message.attachFile = function (file) {
+        console.log(file);
+        EL.messageAdditional.file.empty().hide()
+            .append(
+                'Прикреплённый файл ' + file.name,
+                '<div class="chat-delete-file chat-svg chat-x-svg float-right"></div>'
+            )
+            .slideDown(200);
+        chat.Message.obj.files = file;
+    }
+
+    Message.deleteFile = function () {
+        EL.messageAdditional.file.empty().hide();
+        chat.Message.obj.files = null;
+    }
 
     Message.afterSend = function () {
         Message.obj = new Message();
@@ -102,10 +117,7 @@ export default function (chat) {
         EL.messageTextArea.height(EL.textAreaHeight.children()
             .empty()
             .height());
-        EL.messageAdditional.reply
-            .empty()
-            .hide();
-        EL.messageAdditional.mention
+        EL.messageAdditional.children()
             .empty()
             .hide();
     }
@@ -128,7 +140,8 @@ export default function (chat) {
                             )
                         })
                 )
-                .on('click', '.chat-delete-mention', e => chat.Message.deleteMention($(e.currentTarget).data('id')));
+                .on('click', '.chat-delete-mention', e => chat.Message.deleteMention($(e.currentTarget).data('id')))
+                .on('click', '.chat-delete-file', () => chat.Message.deleteFile());
         }
     };
 }

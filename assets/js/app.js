@@ -81,6 +81,7 @@ let Chat = function () {
         wrapper: 'wrapper',
         messageTextArea: 'message-textarea',
         textAreaHeight: 'textarea-height',
+        buttonAttachFile: 'attach-file',
         buttonSendMessage: 'send-message',
         messageAdditional: [
             'message-additional',
@@ -311,6 +312,12 @@ let Chat = function () {
                         }
                     });
 
+                EL.buttonAttachFile.click(() => {
+                    let input = $('<input type="file">')
+                        .change(() => chat.Message.attachFile(input.prop('files')[0]))
+                        .click();
+
+                });
                 EL.buttonSendMessage.click(() => chat.sendMessage());
 
                 let wait = false;

@@ -87,10 +87,6 @@
     overflow: hidden;
 }
 
-#chat-send-message:hover svg {
-    fill: var(--chat-primary);
-}
-
 #chat-message-additional {
     font-size: 14px;
     box-shadow: 0 3px 5px 0 #223C5033;
@@ -257,10 +253,26 @@
     background-repeat: no-repeat;
 }
 
+.cursor-pointer {
+    cursor: pointer;
+}
+
 .chat-plus-svg {
     width: 15px;
     height: 25px;
     background-image: url('../files/plus.svg');
+}
+
+.chat-paperclip-svg {
+    width: 16px;
+    height: 20px;
+    background-image: url('../files/paperclip.svg');
+}
+
+.chat-send-svg {
+    width: 16px;
+    height: 14px;
+    background-image: url('../files/send.svg');
 }
 
 .chat-x-svg {
