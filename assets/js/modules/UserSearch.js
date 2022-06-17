@@ -39,7 +39,7 @@ export default function (chat) {
             );
         }
 
-        search.updateValues = function (e) {
+        search.updateParams = function (e) {
             search.lastInput = e.originalEvent.data;
             if (search.lastInput !== null) {
                 search.lastAdded = search.valueDiff(search.val(), search.previousValue);
@@ -52,7 +52,8 @@ export default function (chat) {
         }
 
         search.find = function (e) {
-            search.updateValues(e)
+            search.updateParams(e)
+            EL.contextMenu.empty().hide();
             if (search.lastInput === null && Object.values(search.lastDeleted).includes('@')) {
                 search.end();
                 return;
@@ -67,7 +68,9 @@ export default function (chat) {
             let patternEnd = search.patternPosition + search.pattern.length;
             if (lastPosition >= search.patternPosition && lastPosition <= patternEnd) {
                 search.pattern = search.val().slice(search.patternPosition, patternEnd + action);
-                search.findByPattern();
+                if (search.pattern.length >= 2) {
+                    search.findByPattern();
+                }
             } else if (lastPosition <= search.patternPosition) {
                 search.patternPosition += action;
             }
@@ -75,23 +78,16 @@ export default function (chat) {
 
         search.findByPattern = function () {
             let result = [];
-            if (search.pattern !== '') {
-                for (const [id, user] of Object.entries(chat.users)) {
-                    for (const val of user.displayName.split(' ')) {
-                        if (val.search(search.pattern) !== -1) {
-                            result.push(id);
-                            break;
-                        }
-                    }
+            for (const [id, user] of Object.entries(chat.users)) {
+                if (user.displayName.toLowerCase().search(search.pattern.toLowerCase()) !== -1) {
+                    result.push(id);
                 }
-            } else {
-                result = Object.keys(chat.users);
             }
             search.trigger('chat.userSearch.result', [result]);
         }
 
         search.checkStart = function (e) {
-            search.updateValues(e);
+            search.updateParams(e);
             if (search.lastInput === '@') {
                 let inputPosition = search.getLastAddedPosition();
                 let str = search.val().slice(inputPosition - 1, inputPosition)
@@ -143,7 +139,6 @@ export default function (chat) {
                             .slideDown(200);
                     }
                 })
-                .on('chat.userSearch.end', () => EL.contextMenu.slideUp());
 
             chat.on('click', '.search-result .chat-user-in-list', (e) => {
                 let el = $(e.currentTarget);
