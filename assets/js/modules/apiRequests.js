@@ -1,13 +1,43 @@
 export default function (chat) {
     const EL = chat.elements.list;
 
+    const contentJSON = 'application/json';
+    const contentMultipartFormDAta = 'multipart/form-data';
+    let baseOptions = {
+        contentType: contentJSON,
+        dataType: 'json',
+        crossDomain: true,
+    };
+
+    /**
+     * @param query {string}
+     * @param data {Object}
+     * @param method {'GET'|'POST'}
+     * @param options {Object}
+     * @returns {*}
+     */
+    let ajax = function (query, data, method = 'GET', options = {}) {
+        method === 'GET' ?
+            options.data = data
+            : options.data = JSON.stringify(data);
+        if (chat.httpHeaders) options.headers = chat.httpHeaders;
+        return $.ajax(chat.apiUrl + query,
+            $.extend(baseOptions, options, {
+                method: method,
+                data: data,
+            }))
+            .fail((jqXHR) => {
+                console.log(jqXHR.responseJSON)
+            });
+    }
+
     /**
      * @param query {string}
      * @param data {object|null}
      * @param method {'GET'|'POST'}
      * @returns {*}
      */
-    let ajax = function (query, data = null, method = "GET") {
+    let asdklahsdkj = function (query, data = null, method = "GET") {
         let options = {
             method: method,
             contentType: 'application/json',
