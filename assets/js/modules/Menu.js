@@ -83,7 +83,7 @@ export default function (chat) {
         }
     }
 
-    Menu.prototype = EL.contextMenu;
+    Menu.prototype = EL.menu;
 
 
     return {
@@ -103,7 +103,7 @@ export default function (chat) {
                 .cursorPos()
                 .show('fadeIn')
                 .mouseleave(() => {
-                    EL.contextMenu.hide('slideDown');
+                    EL.menu.hide('slideDown');
                 });
         },
     };

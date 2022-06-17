@@ -67,7 +67,7 @@
                 </div>-->
             </div>
         </div>
-        <div id="chat-users-list-side" class="position-absolute"></div>
+        <div id="chat-users-list-side" class="position-absolute overflow-auto"></div>
     </div>
     <div id="chat-bottom-panel" class="d-flex justify-content-between align-items-center user-select-none p-2">
         <div id="chat-show-users-list" class="d-flex align-items-center px-1" title="Показать участников">
@@ -90,5 +90,5 @@
             </svg>
         </div>
     </div>
-    <ul id="chat-contextmenu" class="chat-context-menu py-2 px-0 m-0 position-fixed" style="display: none"></ul>
+    <ul id="chat-menu" class="chat-menu py-2 px-0 m-0 position-fixed" style="display: none"></ul>
 </div>

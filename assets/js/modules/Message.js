@@ -123,7 +123,7 @@ export default function (chat) {
                                 .text('Нажмите, чтобы удалить')
                                 .click(() => {
                                     chat.Message.deleteMention();
-                                    EL.contextMenu.slideUp();
+                                    EL.menu.slideUp();
                                 })
                             )
                         })

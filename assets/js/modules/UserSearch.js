@@ -53,7 +53,7 @@ export default function (chat) {
 
         search.find = function (e) {
             search.updateParams(e)
-            EL.contextMenu.empty().hide();
+            EL.menu.empty().hide();
             if (search.lastInput === null && Object.values(search.lastDeleted).includes('@')) {
                 search.end();
                 return;
@@ -145,7 +145,7 @@ export default function (chat) {
                 chat.Message.addMention(el.data('id'));
                 UserSearch.obj.finishPattern(el.text());
                 UserSearch.obj.end();
-                EL.contextMenu.slideUp();
+                EL.menu.slideUp();
             })
         },
     };

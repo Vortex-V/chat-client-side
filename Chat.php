@@ -33,10 +33,13 @@ class Chat
     const UPDATE_AUTOMATICALLY = 'automatically';
 
     /**
-     * Например
-     * [
-     *  'position' => 'fixed'
-     * ]
+     * атрибут class для тега виджета
+     * @var array
+     */
+    public $class;
+
+    /**
+     * CSS атрибуты
      * @var array
      */
     public $css;
@@ -64,6 +67,7 @@ class Chat
             'httpHeaders',
             'loadMessagesLimit',
             'updateMessages',
+            'class',
             'css',
             'draggable',
             'foldable',

@@ -91,7 +91,7 @@ let Chat = function () {
             }
         ],
         messagesList: 'messages-list',
-        contextMenu: 'contextmenu',
+        menu: 'menu',
         usersListSide: 'users-list-side',
         showUsersList: 'show-users-list',
         updateMessages: 'update-messages',
@@ -270,6 +270,7 @@ let Chat = function () {
          * @type {{
          *     draggable: boolean|null,
          *     foldable: boolean|null,
+         *     class: string,
          *     css: object|null,
          *     updateMessages: object|string|null,
          *     getMessagesLimit: int,
@@ -290,6 +291,7 @@ let Chat = function () {
                 chat.setFoldable();
             }
 
+            if (config.class) chat.addClass(config.class);
             if (config.css) chat.css(config.css);
 
             config.updateMessages ?

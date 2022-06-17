@@ -234,20 +234,18 @@
 
 /* Контекстные меню */
 
-#chat .chat-context-menu {
+#chat .chat-menu {
+    max-height: 300px;
+    overflow-y: auto;
     border-top: 2px var(--chat-primary) solid;
     background-color: var(--chat-bg);
     list-style: none;
     white-space: nowrap;
 }
 
-.chat-context-menu > *:hover, #chat-users-list-side > *:hover {
+.chat-menu > *:hover, #chat-users-list-side > *:hover {
     background-color: var(--chat-hover);
     cursor: default;
-}
-
-#chat-message-contextmenu {
-    transform-origin: left;
 }
 
 /* SVG */
