@@ -2,10 +2,9 @@ export default function (chat) {
     const EL = chat.elements.list;
 
     const contentJSON = 'application/json';
-    const contentMultipartFormDAta = 'multipart/form-data';
     let baseOptions = {
         contentType: contentJSON,
-        dataType: 'json',
+        //dataType: contentJSON, //Странно, что с ним кидает на fail(), хоть ответ 200
         crossDomain: true,
     };
 
@@ -17,43 +16,22 @@ export default function (chat) {
      * @returns {*}
      */
     let ajax = function (query, data, method = 'GET', options = {}) {
-        method === 'GET' ?
-            options.data = data
-            : options.data = JSON.stringify(data);
+        if (method === 'GET') { // простой get запрос
+            options.data = data;
+        } else if (options.contentType === false) { // возможна отправка файла, post запрос
+            let formData = new FormData();
+            for (const [name, value] of Object.entries(data)) {
+                formData.set(name, value);
+            }
+            options.data = formData;
+        } else { // post запрос
+            options.data = JSON.stringify(data);
+        }
         if (chat.httpHeaders) options.headers = chat.httpHeaders;
         return $.ajax(chat.apiUrl + query,
             $.extend(baseOptions, options, {
                 method: method,
-                data: data,
             }))
-            .fail((jqXHR) => {
-                console.log(jqXHR.responseJSON)
-            });
-    }
-
-    /**
-     * @param query {string}
-     * @param data {object|null}
-     * @param method {'GET'|'POST'}
-     * @returns {*}
-     */
-    let asdklahsdkj = function (query, data = null, method = "GET") {
-        let options = {
-            method: method,
-            contentType: 'application/json',
-        };
-        if (chat.httpHeaders) options.headers = chat.httpHeaders;
-        let defaults = {
-            room_id: chat.session.roomId,
-            user_id: chat.session.userId
-        }
-        data ?
-            $.extend(data, defaults)
-            : data = defaults;
-        method === "GET" ?
-            options.data = data
-            : options.data = JSON.stringify(data);
-        return $.ajax(chat.apiUrl + query, options)
             .fail((jqXHR) => {
                 console.log(jqXHR.responseJSON)
             });
@@ -61,7 +39,7 @@ export default function (chat) {
 
     return {
         getRoom: function () {
-            return ajax('/room', {
+            return ajax(`/room/${chat.session.roomId}`, {
                 params: {
                     limit: chat.loadMessagesLimit,
                 }
@@ -122,24 +100,30 @@ export default function (chat) {
                 params.oldest_id = chat.oldestMessage;
                 paramName = 'oldestMessage';
             }
-            return ajax('/roomMessages', {
+            return ajax(`/room/${chat.session.roomId}/messages`, {
                 params: params,
+            }, 'GET', {
+                processData: true,
             }).done((messages) => {
-                if (typeof messages === 'object' && messages.length) {
+                if (typeof messages !== 'object') {
+                    throw new Error('Ошибка на стороне сервера');
+                }
+                if (messages.length) {
                     chat[paramName] = messages[paramName === 'lastMessage' ? 0 : messages.length - 1].id;
                     chat.showMessages(messages, insertMethod);
-                } else {
-                    throw new Error('Ошибка на стороне сервера');
                 }
             })
         },
         sendMessage: function () {
             let body = EL.messageTextArea.val();
-            if (body) {
-                ajax('/sendMessage',
+            if (body || chat.Message.obj.files) {
+                ajax(`/room/${chat.session.roomId}/message`,
                     Object.assign(chat.Message.obj, {
                         body: body
-                    }), "POST")
+                    }), "POST", {
+                        contentType: false,
+                        processData: false,
+                    })
                     .done((message) => {
                         chat.lastMessage = message.id;
                         chat.showMessage(message, "prepend");

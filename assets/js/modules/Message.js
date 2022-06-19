@@ -5,6 +5,7 @@ export default function (chat) {
     let Message = function () {
         let message = this;
         $.extend(message, {
+            user_id: chat.session.userId,
             /**
              * @type {string}
              */
@@ -18,9 +19,9 @@ export default function (chat) {
              */
             mention: [],
             /**
-             * @type {array}
+             * @type {object}
              */
-            files: null
+            file: null
         });
     }
 
@@ -96,19 +97,18 @@ export default function (chat) {
     }
 
     Message.attachFile = function (file) {
-        console.log(file);
         EL.messageAdditional.file.empty().hide()
             .append(
                 'Прикреплённый файл ' + file.name,
                 '<div class="chat-delete-file chat-svg chat-x-svg float-right"></div>'
             )
             .slideDown(200);
-        chat.Message.obj.files = file;
+        chat.Message.obj.file = file;
     }
 
     Message.deleteFile = function () {
         EL.messageAdditional.file.empty().hide();
-        chat.Message.obj.files = null;
+        chat.Message.obj.file = null;
     }
 
     Message.afterSend = function () {
@@ -141,7 +141,8 @@ export default function (chat) {
                         })
                 )
                 .on('click', '.chat-delete-mention', e => chat.Message.deleteMention($(e.currentTarget).data('id')))
-                .on('click', '.chat-delete-file', () => chat.Message.deleteFile());
+                .on('click', '.chat-delete-file', () => chat.Message.deleteFile())
+                .on('click', '.message-attached-file', () => {/*TODO скачать */});
         }
     };
 }
