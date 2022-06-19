@@ -10,12 +10,13 @@ export default function (chat) {
                 userId = data.user_id,
                 repliedTo = data.replied_to ?? null,
                 mention = data.mention ?? null,
-                files = data.files ?? null;
+                file = data.file ?? null;
 
             let div = $('<div class="chat-message d-flex">')
                 .data({
                     id: id,
-                    userId: userId
+                    userId: userId,
+                    fileId: file.id
                 })
                 .attr('id', 'chat-message-' + id);
 
@@ -70,10 +71,10 @@ export default function (chat) {
             centerColumn.append(messageHead)
 
             // Прикрепленные файлы
-            if (files) {
-                for (let file of files) {
-                    centerColumn.append(`<div class="message-attached-file">file_${file.id}${" | " + file.name ?? ""}</div>`);
-                }
+            if (file.id !== null) {
+                //for (let file of files) {
+                centerColumn.append(`<div class="message-attached-file">file_${file.id}${" | " + file.name ?? ""}</div>`);
+                // }
             }
             // Текст сообщения
             centerColumn
@@ -131,7 +132,7 @@ export default function (chat) {
          *     user_id: int,
          *     replied_to: int | null,
          *     mention: array | null,
-         *     files: [{
+         *     file: [{
          *          id: string,
          *          name: string|null,
          *      }] | null
