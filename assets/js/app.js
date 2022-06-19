@@ -187,7 +187,7 @@ let Chat = function () {
                         .show()
                 },
                 automatically: () => setInterval(() => {
-                    chat.updateMessages();
+                    chat.loadMessages('prepend');
                 }, timeout),
             };
             if (Object.keys(methods).includes(type)) methods[type]();
